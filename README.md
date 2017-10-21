@@ -246,12 +246,12 @@ You can also create a channel via the SDK or the SendBird [Platform API](/platfo
 ```cpp
 #include <SendBird.h>
 
-class SendBirdOpenChannelCreateHandler : public SBDCreateOpenChannelInterface {
+class SendBirdCreateOpenChannelHandler : public SBDCreateOpenChannelInterface {
 public:
-  SendBirdOpenChannelCreateHandler() {
+  SendBirdCreateOpenChannelHandler() {
   }
 
-  ~SendBirdOpenChannelCreateHandler() {
+  ~SendBirdCreateOpenChannelHandler() {
   }
 
   void CompletionHandler(SBDOpenChannel *channel, SBDError *error) {
@@ -270,7 +270,7 @@ public:
 };
 
 void CreateOpenChannel() {
-  SendBirdOpenChannelCreateHandler *handler = new SendBirdOpenChannelCreateHandler(); // `handler` has to be deallocated later.
+  SendBirdCreateOpenChannelHandler *handler = new SendBirdCreateOpenChannelHandler(); // `handler` has to be deallocated later.
 
   // Every wstring type parameter is an option. If you don't have to set them, set `SBD_NULL_WSTRING`.
   // OPERATOR_USER_IDS is vector<wstring> type. If you don't have to set it, set vector<wstring>().
@@ -410,7 +410,7 @@ To stop receiving messages from an Open Channel, you must exit the channel.
 ```cpp
 #include <SendBird.h>
 
-class SendBirdExitOpenChannelHandler : public SBDOpenChannelExitInterface {
+class SendBirdExitOpenChannelHandler : public SBDExitOpenChannelInterface {
 public:
   SendBirdExitOpenChannelHandler() {
 
@@ -858,12 +858,12 @@ When creating a channel, you can add a cover image by specifying an image URL.
 ```cpp
 #include <SendBird.h>
 
-class SendBirdOpenChannelCreateHandler : public SBDCreateOpenChannelInterface {
+class SendBirdCreateOpenChannelHandler : public SBDCreateOpenChannelInterface {
 public:
-  SendBirdOpenChannelCreateHandler() {
+  SendBirdCreateOpenChannelHandler() {
   }
 
-  ~SendBirdOpenChannelCreateHandler() {
+  ~SendBirdCreateOpenChannelHandler() {
   }
 
   void CompletionHandler(SBDOpenChannel *channel, SBDError *error) {
@@ -882,7 +882,7 @@ public:
 };
 
 void CreateOpenChannel() {
-  SendBirdOpenChannelCreateHandler *handler = new SendBirdOpenChannelCreateHandler(); // `handler` has to be deallocated later.
+  SendBirdCreateOpenChannelHandler *handler = new SendBirdCreateOpenChannelHandler(); // `handler` has to be deallocated later.
 
   SBDOpenChannel::CreateChannel(SBD_NULL_WSTRING, SBD_NULL_WSTRING, COVER_URL, SBD_NULL_WSTRING, vector<wstring>(), SBD_NULL_WSTRING, handler);
 }
@@ -899,12 +899,12 @@ When creating a channel, you can additionally specify a **Custom Type** to furth
 ```cpp
 #include <SendBird.h>
 
-class SendBirdOpenChannelCreateHandler : public SBDCreateOpenChannelInterface {
+class SendBirdCreateOpenChannelHandler : public SBDCreateOpenChannelInterface {
 public:
-  SendBirdOpenChannelCreateHandler() {
+  SendBirdCreateOpenChannelHandler() {
   }
 
-  ~SendBirdOpenChannelCreateHandler() {
+  ~SendBirdCreateOpenChannelHandler() {
   }
 
   void CompletionHandler(SBDOpenChannel *channel, SBDError *error) {
@@ -923,7 +923,7 @@ public:
 };
 
 void CreateOpenChannel() {
-  SendBirdOpenChannelCreateHandler *handler = new SendBirdOpenChannelCreateHandler(); // `handler` has to be deallocated later.
+  SendBirdCreateOpenChannelHandler *handler = new SendBirdCreateOpenChannelHandler(); // `handler` has to be deallocated later.
 
   SBDOpenChannel::CreateChannel(SBD_NULL_WSTRING, SBD_NULL_WSTRING, SBD_NULL_WSTRING, DATA, vector<wstring>(), CUSTOM_TYPE, handler);
 }
