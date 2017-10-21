@@ -31,7 +31,7 @@ public:
     virtual void CompletionHandler(SBDError *error) {};
 };
 
-class SBDOpenChannelExitInterface : public SBDBaseInterface {
+class SBDExitOpenChannelInterface : public SBDBaseInterface {
 public:
     virtual void CompletionHandler(SBDError *error) {};
 };
@@ -152,7 +152,7 @@ public:
      *
      *  @param completion_handler The handler interface to execute.
      */
-    void Exit(SBDOpenChannelExitInterface *completion_handler);
+    void Exit(SBDExitOpenChannelInterface *completion_handler);
     
     /**
      *  Creates a query instance for getting participant list of the channel instance.
