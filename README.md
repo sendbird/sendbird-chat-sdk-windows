@@ -196,6 +196,38 @@ void UpdateCurrentUserInfo() {
 }
 ```
 
+Or, you can pass in an image file directly.
+
+```cpp
+#include <SendBird.h>
+
+class SendBirdUpdateUserInfoHandler : public SBDUpdateUserInfoInterface {
+public:
+  SendBirdUpdateUserInfoHandler() {
+
+  }
+
+  ~SendBirdUpdateUserInfoHandler() {
+
+  }
+
+  void CompletionHandler(SBDError *error) {
+      // Error Handlling.
+
+      // Deallocate error.
+      delete error;
+
+      return;
+    }
+  }
+};
+
+void UpdateCurrentUserInfo() {
+  SendBirdUpdateUserInfoHandler *handler = new SendBirdUpdateUserInfoHandler(); // `handler` has to be deallocated later.
+  SBDMain::UpdateCurrentUserInfoWithBinaryProfileImage(NEW_NICKNAME, NEW_PROFILE_IMAGE_FILE_PATH, FILE_MIME_TYPE, handler);
+}
+```
+
 ## Channel Types
 You should understand the following terminology before proceeding with the rest of this guide.
 
@@ -1166,6 +1198,58 @@ void GetOpenChannels() {
   query->LoadNextPage(handler);
 }
 ```
+
+### File Message thumbnails
+
+> This feature is not available under the Free plan. Contact [sales@sendbird.com](mailto:sales@sendbird.com) if you wish to implement this functionality.
+
+When sending an image file, you can choose to create thumbnails of the image, which you can fetch and render into your UI. You can specify up to **3** different dimensions to generate thumbnail images in, which can be convenient for supporting various display densities.
+
+> Supported file types are files whose **MIME type** is `image/*` or `video/*`.
+
+> The SDK does not support creating thumbnails when [sending a File Message via a file URL](#open_channel_3_sending_messages).
+
+Create a `vector` of `SBDThumbnailSize` objects to pass to `SendFileMessageWithPath()`. A `SBDThumbnailSize` can be created with the constructor `SBDThumbnailSize()`, where the values specify **pixels**. The `completion_handler` callback of `SBDSendFileMessageInterface` will subsequently return a `vector` of `SBDThumbnail` objects in the file message object that each contain the URL of the generated thumbnail image file.
+
+```cpp
+#include <SendBird.h>
+
+class SendBirdSendFileMessageHandler : public SBDSendFileMessageInterface {
+public:
+  SendBirdSendFileMessageHandler() {
+
+  }
+
+  ~SendBirdSendFileMessageHandler() {
+
+  }
+
+  void CompletionHandler(SBDFileMessage *file_message, SBDError *error) {
+    if (error != NULL) {
+      // Error Handlling.
+
+      // Deallocate error.
+      delete error;
+
+      return;
+    }
+
+    // file_message->thumbnails has the thumbnails' information.
+  }
+};
+
+void SendFileMessage() {
+  vector<SBDThumbnailSize> thumbnail_sizes;
+  thumbnail_sizes.push_back(SBDThumbnailSize(320, 320));
+  thumbnail_sizes.push_back(SBDThumbnailSize(160, 160));
+
+  SendBirdSendFileMessageHandler *handler = new SendBirdSendFileMessageHandler(); // `handler` has to be deallocated later.
+  channel->SendFileMessageWithPath(FILE_PATH, FILE_MIME_TYPE, thumbnail_sizes, DATA, CUSTOM_TYPE, handler));		
+}
+```
+
+`max_width` and `max_height` specify the maximum dimensions of the thumbnail. Your image will be scaled down evenly to fit within the bounds of (`max_width`, `max_height`). Note that if the original image is smaller than the specified dimensions, the thumbnail will not be scaled. `GetUrl()` returns the location of the generated thumbnail file within the SendBird servers.
+
 
 ## Group Channel
 
@@ -2160,6 +2244,54 @@ public:
 | sw            | Kiswahili           | yua           | Yucatec Maya       |
 | tlh           | Klingon             |     -         |          -         |
 
+### File Message thumbnails
+
+> This feature is not available under the Free plan. Contact [sales@sendbird.com](mailto:sales@sendbird.com) if you wish to implement this functionality.
+
+When sending an image file, you can choose to create thumbnails of the image, which you can fetch and render into your UI. You can specify up to **3** different dimensions to generate thumbnail images in, which can be convenient for supporting various display densities.
+
+> Supported file types are files whose **MIME type** is `image/*` or `video/*`.
+
+> The SDK does not support creating thumbnails when [sending a File Message via a file URL](#open_channel_3_sending_messages).
+
+Create a `vector` of `SBDThumbnailSize` objects to pass to `SendFileMessageWithPath()`. A `SBDThumbnailSize` can be created with the constructor `SBDThumbnailSize()`, where the values specify **pixels**. The `completion_handler` callback of `SBDSendFileMessageInterface` will subsequently return a `vector` of `SBDThumbnail` objects in the file message object that each contain the URL of the generated thumbnail image file.
+
+```cpp
+class SendBirdSendFileMessageHandler : public SBDSendFileMessageInterface {
+public:
+  SendBirdSendFileMessageHandler() {
+
+  }
+
+  ~SendBirdSendFileMessageHandler() {
+
+  }
+
+  void CompletionHandler(SBDFileMessage *file_message, SBDError *error) {
+    if (error != NULL) {
+      // Error Handlling.
+
+      // Deallocate error.
+      delete error;
+
+      return;
+    }
+
+    // file_message->thumbnails has the thumbnails' information.
+  }
+};
+
+void SendFileMessage() {
+  vector<SBDThumbnailSize> thumbnail_sizes;
+  thumbnail_sizes.push_back(SBDThumbnailSize(320, 320));
+  thumbnail_sizes.push_back(SBDThumbnailSize(160, 160));
+
+  SendBirdSendFileMessageHandler *handler = new SendBirdSendFileMessageHandler(); // `handler` has to be deallocated later.
+  channel->SendFileMessageWithPath(FILE_PATH, FILE_MIME_TYPE, thumbnail_sizes, DATA, CUSTOM_TYPE, handler));	
+}
+```
+
+`max_width` and `max_height` specify the maximum dimensions of the thumbnail. Your image will be scaled down evenly to fit within the bounds of (`max_width`, `max_height`). Note that if the original image is smaller than the specified dimensions, the thumbnail will not be scaled. `GetUrl()` returns the location of the generated thumbnail file within the SendBird servers.
 
 ## Channel Metadata
 
