@@ -21,10 +21,8 @@ All users within the same SendBird application are able to communicate with each
 
 #### 2-1. Dependencies
 
-* boost(v1.65.1 recommended)
-* OpenSSL(v1.0.2l recommended)
-
-**The [vcpkg](https://github.com/Microsoft/vcpkg) is recommended for the dependencies.**
+This library doesn't have any dependencies. However, if you use boost and OpenSSL and there is a symbol conflict with them, contact [Technical Support
+](https://help.sendbird.com/hc/en-us/requests/new).
 
 #### 2-2. Set Visual Studio Project
 
