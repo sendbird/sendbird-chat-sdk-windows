@@ -3,7 +3,7 @@
 
 ![Platform](https://img.shields.io/badge/platform-Windows-blue.svg)
 ![Language](https://img.shields.io/badge/language-C%2B%2B-red.svg)
-[![Commercial License](https://img.shields.io/badge/license-Commercial-brightgreen.svg)](https://github.com/smilefam/SendBird-Windows/blob/master/LICENSE.md)
+[![Commercial License](https://img.shields.io/badge/license-Commercial-brightgreen.svg)](https://github.com/sendbird/SendBird-Windows/blob/master/LICENSE.md)
 ![Status](https://img.shields.io/badge/status-beta-yellowgreen.svg)
 
 ## Quick Start

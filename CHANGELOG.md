@@ -1,5 +1,9 @@
 # Change Log
 
+### v3.0.3(Aug 29, 2019)
+* Fixed typo.
+* Fixed the bug which is related to the event.
+
 ### v3.0.2(Jan 31, 2019)
 * Fixed minor bug.
 
