@@ -75,7 +75,7 @@ typedef enum {
     SBDErrorRequestFailed = 800220,
     SBDErrorFileUploadCancelFailed = 800230,
     SBDErrorFileUploadCancelled = 800240,
-} SDBErrorCode;
+} SBDErrorCode;
 
 /**
  *  Connection state
