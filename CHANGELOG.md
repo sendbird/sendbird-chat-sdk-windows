@@ -1,5 +1,8 @@
 # Change Log
 
+### v3.0.5(Nov 5, 2019)
+* Fixed build configuration.
+
 ### v3.0.4(Oct 21, 2019)
 * Fixed the bug with last message in group channel.
 
