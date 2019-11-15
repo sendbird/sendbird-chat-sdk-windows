@@ -1,5 +1,8 @@
 # Change Log
 
+### v3.0.6(Nov 15, 2019)
+* Fixed minor bugs.
+
 ### v3.0.5(Nov 5, 2019)
 * Fixed build configuration.
 

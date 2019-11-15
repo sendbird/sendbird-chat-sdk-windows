@@ -195,4 +195,11 @@ typedef enum {
     SBDMessageTypeAdmin = 2,
 } SBDMessageType;
 
+/**
+*	Mention type.
+*/
+typedef enum {
+	SBDMentionTypeChannel = 0,
+	SBDMentionTypeUsers = 1,
+} SBDMentionType;
 #endif /* SENDBIRD_SBDTYPES_H_ */
