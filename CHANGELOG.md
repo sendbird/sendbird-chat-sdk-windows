@@ -1,5 +1,11 @@
 # Change Log
 
+### v3.0.7(Nov 26, 2019)
+* Added `ChannelWasHidden()` event.
+* Added `HideChannel()` with `allow_auto_unhide` option.
+* Renamed the error code.
+* Fixed minor bugs.
+
 ### v3.0.6(Nov 15, 2019)
 * Fixed minor bugs.
 
