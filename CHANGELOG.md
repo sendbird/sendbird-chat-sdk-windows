@@ -1,5 +1,8 @@
 # Change Log
 
+### v3.0.8(Dec 16, 2019)
+* Fixed a bug related to file uploading.
+
 ### v3.0.7(Nov 26, 2019)
 * Added `ChannelWasHidden()` event.
 * Added `HideChannel()` with `allow_auto_unhide` option.
