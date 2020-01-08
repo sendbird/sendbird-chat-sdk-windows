@@ -1,5 +1,9 @@
 # Change Log
 
+### v3.0.9(Jan 8, 2020)
+* Fixed some bugs of group channel.
+* Fixed connection bug.
+
 ### v3.0.8(Dec 16, 2019)
 * Fixed a bug related to file uploading.
 
