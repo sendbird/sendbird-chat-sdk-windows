@@ -1,6 +1,6 @@
 # Change Log
 
-### v3.0.9(Feb 24, 2020)
+### v3.0.10(Feb 24, 2020)
 * Supports `dynamic_cast` for `SBDBaseMessage` and `SBDBaseChannel` and subclasses of them.
 
 ### v3.0.9(Jan 8, 2020)
