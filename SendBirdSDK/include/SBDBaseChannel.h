@@ -811,6 +811,11 @@ public:
 	 *  Internal use only
 	 */
 	SBDBaseChannel();
+
+    /**
+     *  Internal use only
+     */
+    virtual ~SBDBaseChannel();
 };
 
 #endif /* SENDBIRD_SBDBASECHANNEL_H_ */
