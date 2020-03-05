@@ -1,5 +1,8 @@
 # Change Log
 
+### v3.0.11(Mar 3, 2020)
+* Added a method to send a file message with binary file data.
+
 ### v3.0.10(Feb 24, 2020)
 * Supports `dynamic_cast` for `SBDBaseMessage` and `SBDBaseChannel` and subclasses of them.
 
