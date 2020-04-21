@@ -1,5 +1,8 @@
 # Change Log
 
+### v3.0.12(Apr 21, 2020)
+* Fixed a bug that `ChannelChanged()` event handler isn't invoked.
+
 ### v3.0.11(Mar 3, 2020)
 * Added `SBDBaseChannel::SendFileMessage()` to send a file message with binary file data.
 
