@@ -60,6 +60,7 @@ public:
 	 *  If set <code>true</code>, the sender information of `sender` of `SBDUserMessage` or `SBDFileMessage` such as nickname and profile url will be returned as the latest user's. Otherwise, the information will be the value of the message creation time.
 	 */
     static bool user_member_as_message_sender;
+	static bool sync_channel_and_received_message;
 };
 
 class SBDReconnectionInterface {
@@ -185,6 +186,8 @@ private:
     bool has_current_user;
 
 	SBDScheduledMM *scheduled_mm;
+
+	HANDLE channel_update_mutex;
     
 public:
 	/**
@@ -691,6 +694,16 @@ public:
 	 *  Internal use only.
 	 */
 	static pthread_mutex_t callback_list_lock;
+
+	/**
+	 *  Internal use only.
+	 */
+	static void ChannelUpdateLock();
+
+	/**
+	 *  Internal use only.
+	 */
+	static void ChannelUpdateUnlock();
 };
 
 #endif /* SENDBIRD_SBDMAIN_H_ */

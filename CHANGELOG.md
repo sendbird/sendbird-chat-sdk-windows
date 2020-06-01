@@ -1,5 +1,8 @@
 # Change Log
 
+### v3.0.13(Jun 1, 2020)
+* Fixed a bug that `MessageReceived()` event hander doesn't return the latest channel when the channel was just updated.
+
 ### v3.0.12(Apr 21, 2020)
 * Fixed a bug that `ChannelChanged()` event handler isn't invoked.
 
