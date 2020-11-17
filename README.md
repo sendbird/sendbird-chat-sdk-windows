@@ -28,7 +28,54 @@ It is simple to implement chat in your client app with the Chat SDK: a **user** 
 
 This section shows you the prerequisites you need to know for using Sendbird Chat SDK for Windows.
 
-### Requirements
+### Requirements### File Message thumbnails
+
+> This feature is not available under the Free plan. Contact [sales@sendbird.com](mailto:sales@sendbird.com) if you wish to implement this functionality.
+
+When sending an image file, you can choose to create thumbnails of the image, which you can fetch and render into your UI. You can specify up to **3** different dimensions to generate thumbnail images in, which can be convenient for supporting various display densities.
+
+> Supported file types are files whose **MIME type** is `image/*` or `video/*`.
+
+> The SDK does not support creating thumbnails when [sending a File Message via a file URL](#open_channel_3_sending_messages).
+
+Create a `vector` of `SBDThumbnailSize` objects to pass to `SendFileMessageWithPath()`. A `SBDThumbnailSize` can be created with the constructor `SBDThumbnailSize()`, where the values specify **pixels**. The `completion_handler` callback of `SBDSendFileMessageInterface` will subsequently return a `vector` of `SBDThumbnail` objects in the file message object that each contain the URL of the generated thumbnail image file.
+
+```cpp
+class SendBirdSendFileMessageHandler : public SBDSendFileMessageInterface {
+public:
+  SendBirdSendFileMessageHandler() {
+
+  }
+
+  ~SendBirdSendFileMessageHandler() {
+
+  }
+
+  void CompletionHandler(SBDFileMessage *file_message, SBDError *error) {
+    if (error != NULL) {
+      // Error Handlling.
+
+      // Deallocate error.
+      delete error;
+
+      return;
+    }
+
+    // file_message->thumbnails has the thumbnails' information.
+  }
+};
+
+void SendFileMessage() {
+  vector<SBDThumbnailSize> thumbnail_sizes;
+  thumbnail_sizes.push_back(SBDThumbnailSize(320, 320));
+  thumbnail_sizes.push_back(SBDThumbnailSize(160, 160));
+
+  SendBirdSendFileMessageHandler *handler = new SendBirdSendFileMessageHandler(); // `handler` has to be deallocated later.
+  channel->SendFileMessageWithPath(FILE_PATH, FILE_MIME_TYPE, thumbnail_sizes, DATA, CUSTOM_TYPE, handler));	
+}
+```
+
+`max_width` and `max_height` specify the maximum dimensions of the thumbnail. Your image will be scaled down evenly to fit within the bounds of (`max_width`, `max_height`). Note that if the original image is smaller than the specified dimensions, the thumbnail will not be scaled. `GetUrl()` returns the location of the generated thumbnail file within the SendBird servers.
 
 - Windows 7 (32-bit/64-bit) or higher
 - C++03 or higher
@@ -463,7 +510,6 @@ You should understand the following terminology before proceeding with the rest 
 ### Open channel
 
 An **open channel** is a Twitch-style public chat. In this channel type, anyone can enter and participate without permission. A single channel can handle thousands of simultaneous users.
-
 
 ### Group channel
 
@@ -928,7 +974,7 @@ void GetPreviousMessage() {
 
 To load messages sent after a specified timestamp, call the [`GetNextMessagesByTimestamp()`] in a similar fashion. To load results on either side of the reference timestamp, use the [`GetMessagesByTimestamp()`].
 
-### Delete messages
+### Delete a message
 
 Users are able to delete messages. An error is returned if a user tries to delete messages sent by someone else. Channel Operators are able to delete any messages sent by any users in the channel.
 
@@ -982,7 +1028,7 @@ void InitSendBird() {
 }
 ```
 
-### Getting a list of participants in a channel
+### Get a list of participants in a channel
 
 Participants are online users who are currently receiving all messages from the open channel that they are in.
 
@@ -1383,7 +1429,7 @@ void GetOpenChannels() {
 }
 ```
 
-### File Message thumbnails
+### File message thumbnails
 
 > This is one of Sendbird's **premium features**. Contact our [sales team](https://get.sendbird.com/talk-to-sales.html) for further assistance.
 
@@ -1686,7 +1732,7 @@ void LeaveGroupChannel() {
 ```
 
 
-### Getting a list of my Group Channels
+### Get a list of my Group Channels
 
 Use the `CreateMyGroupChannelListQuery()` and `SBDGroupChannel.LoadNextPage()` to return a list of `SBDGroupChannel` objects to obtain a list of group channels. 
 
@@ -1852,6 +1898,7 @@ void GetMyGroupChannels() {
 ```
 
 ### Send a message
+
 Upon entering a channel, a user will be able to send messages of the following types:
 
 - **UserMessage**: A text message sent by a user
@@ -2112,30 +2159,32 @@ void InitSendBird() {
 }
 ```
 
-<br />
+### Get a list of all channel members
 
-## Group channel - Advanced
-
-### Getting a list of all channel members
-
-You can obtain a list of members in a Group Channel by referencing the `members` attribute within `SBDGroupChannel`.
+Reference the `members` attribute within `SBDGroupChannel` to obtain a list of members in a group channel.
 
 ```cpp
 vector<SBDMember> members = group_channel->members;
 ```
 
-### Getting members' online statuses
-To stay updated on each participant's connection status, you must obtain a new `SBDUserListQuery`, which contains the latest information on each user. To get a `SBDUserListQuery` for a specific channel, call `CreateOpenChannelListQuery()` of `SBDOpenChannel`. If you wish to get the list of all users of your service (application), call `CreateUserListQuery(USER_IDS)` of `SBDMain`.
+### Get members' online statuses
 
-You can then check each of the users' connection statuses by referencing `connection_status` of `SBDUser`.
+To stay updated on each participant's connection status, you must obtain a new `SBDUserListQuery`, which contains the latest information on each user. To get a `SBDUserListQuery` for a specific channel, call `CreateOpenChannelListQuery()` of `SBDOpenChannel`. If you wish to get the list of all users of your service or application, call `CreateUserListQuery(USER_IDS)` of `SBDMain`.
 
-> If your application needs to keep track of users' connection statuses in real time, we recommend that you receive a new `SBDUserListQuery` periodically, perhaps in intervals of one minute or more.
+Reference the `connection_status` of `SBDUser` to check each of the users' connection statuses.
 
-`connection_status` can return one of three values:
+If your application needs to keep track of users' connection statuses in real time, we recommend that you receive a new `SBDUserListQuery` periodically, perhaps in intervals of one minute or more.
 
-* `SBDUserConnectionStatusNotAvailable` : User's status information cannot be reached.
-* `SBDUserConnectionStatusOffline` : User is disconnected from SendBird.
-* `SBDUserConnectionStatusOnline` : User is connected to SendBird.
+`connection_status` can return one of the three following values:
+
+- `SBDUserConnectionStatusNotAvailable`: A user's status information cannot be reached.
+- `SBDUserConnectionStatusOffline`: A user is disconnected from Sendbird server.
+- `SBDUserConnectionStatusOnline`: A user is connected to Sendbird server.
+
+
+<br />
+
+## Group channel - Advanced
 
 
 ### Typing indicators
@@ -2146,29 +2195,30 @@ group_channel->StartTyping();
 group_channel->EndTyping();
 ```
 
-You can receive a `TypingStatusUpdated` event with a Channel Interface.
+You can receive a `TypingStatusUpdated` event with `SBDChannelInterface`.
 
 ```cpp
 #include <SendBird.h>
 
 class SendBirdChannelEventHandler : public SBDChannelInterface {
 public:
-  // ...
-
-  void TypingStatusUpdated(SBDGroupChannel *channel) {
-
-  }
-
-  // ...
+    // ...
+    
+    void TypingStatusUpdated(SBDGroupChannel *channel) {
+    
+    }
+    
+    // ...
 };
 
 void InitChannelEventHandler() {
-  SBDMain::AddChannelHandler(new SendBirdChannelEventHandler(), UNIQUE_HANDLER_ID);
+    SBDMain::AddChannelHandler(new SendBirdChannelEventHandler(), UNIQUE_HANDLER_ID);
 }
 ```
 
-### Read Receipts
-A user can indicate that they have read a message by calling `MarkAsRead()`.
+### Read receipts
+
+A user can indicate that they have read a message by calling the `MarkAsRead()`.
 
 ```cpp
 group_channel->MarkAsRead();
@@ -2181,196 +2231,235 @@ This broadcasts a `ReadReceiptUpdated` event, which can be handled with a channe
 
 class SendBirdChannelEventHandler : public SBDChannelInterface {
 public:
-  // ...
-
-  void ReadReceiptUpdated(SBDGroupChannel *channel) {
-
-  }
-
-  // ...
+    // ...
+    
+    void ReadReceiptUpdated(SBDGroupChannel *channel) {
+    
+    }
+    
+    // ...
 };
 
 void InitChannelEventHandler() {
-  SBDMain::AddChannelHandler(new SendBirdChannelEventHandler(), UNIQUE_HANDLER_ID);
+    SBDMain::AddChannelHandler(new SendBirdChannelEventHandler(), UNIQUE_HANDLER_ID);
 }
 ```
 
-`GetReadReceipt()` returns the number of members in the channel who have not read the message
+`GetReadReceipt()` returns the number of members in the channel who have not read the message.
 
 ```cpp
 int unread_count = channel->GetReadReceipt(message);
 ```
 
-### Viewing who has read a message
+### View who has read a message
 
-You can view who has read a message with [`GetReadMembers()`]. This list is updated when the message's read receipt is updated. Therefore, you should replace your previous message instance with the newly received message in [`ReadReceiptUpdated()`] for real-time updates.
+You can view who has read a message with `GetReadMembers()`. This list is updated when the message's read receipt is updated. Therefore, you should replace your previous message instance with the newly received message in `ReadReceiptUpdated()` for real-time updates.
 
 ```cpp
 vector<SBDMember> members = group_channel->GetReadMembers(message);
 ```
 
-Similarly, you can also view who has **not** read the message with [`GetUnreadMembers():`].
+Similarly, you can also view who has **not** read the message with `GetUnreadMembers():`.
 
 ### Admin messages
 
-You can send Admin messages to users in a channel using the [SendBird Dashboard](https://dashboard.sendbird.com) or the [Platform API](/platform).
+Admin messages can be sent to users in a channel using the [SendBird Dashboard](https://dashboard.sendbird.com//auth/signin) or [Chat Platform API](https://sendbird.com/docs/chat/v3/platform-api/guides/messages#2-send-a-message).
 
-To do so using the Dashboard, navigate to the **Group Channels** tab. Inside the message box, you should see an option to send an Admin message. Admin messages should not be longer than 1000 characters.
+To send Admin messages using the Dashboard, navigate to the **Group channels** tab. Inside the message box, you should see an option to send an admin message. Admin messages should not be longer than **1,000** characters.
 
-> If you are currently developing under the **Free Plan** and therefore cannot access the **Moderation Tools** from the Dashboard, you must send Admin messages through the Platform API.
-
-
+> If you are currently developing under the **Free Plan** and therefore cannot access the **Moderation Tools** from the Dashboard, you must send an admin message through Chat Platform API.
 
 ### Custom channel types
 
-When creating a channel, you can additionally specify a **Custom Type** to further subclassify your channels. This custom type takes on the form of a `NSString`, and can be handy in searching or filtering channels.
+When creating a channel, a custom type can be additionally specified to further subclassify the channels. This custom type takes on the form of a `NSString`, and can be handy in searching for or filtering channels.
 
-> `DATA` and `CUSTOM_TYPE` are both String fields that allow you to append information to your channels. The intended use case is for `CUSTOM_TYPE` to contain information that can subclassify the channel (e.g., distinguishing "School" and "Work" channels). However, both these fields can be flexibly utilized.
+> `DATA` and `CUSTOM_TYPE` are both `String` fields that allow you to append information to your channels. The intended use case is for `CUSTOM_TYPE` to contain information that can subclassify the channel (e.g., distinguishing "School" and "Work" channels). However, both these fields can be flexibly utilized.
 
 ```cpp
 #include <SendBird.h>
 
 class SendBirdCreateGroupChannelHandler : public SBDCreateGroupChannelInterface {
 public:
-  SendBirdCreateGroupChannelHandler() {
-
-  }
-
-  ~SendBirdCreateGroupChannelHandler() {
-
-  }
-
-  void CompletionHandler(SBDGroupChannel *channel, SBDError *error) {
-    if (error != NULL) {
-      // Error Handlling.
-
-      // Deallocate error.
-      delete error;
-
-      return;
+    SendBirdCreateGroupChannelHandler() {
+    
     }
     
-    // The group channel is created.
-    // Do not deallocate `channel` pointer.
-  }
+    ~SendBirdCreateGroupChannelHandler() {
+    
+    }
+    
+    void CompletionHandler(SBDGroupChannel *channel, SBDError *error) {
+        if (error != NULL) {
+            // Error Handlling.
+            // Deallocate error.
+            delete error;
+            return;
+        }
+        
+        // The group channel is created.
+        // Do not deallocate `channel` pointer.
+    }
 };
 
 void CreateGroupChannel() {
-  SendBirdCreateGroupChannelHandler *handler = new SendBirdCreateGroupChannelHandler(); // `handler` has to be deallocated later.
-
-  SBDGroupChannel::CreateChannel(vector<wstring>(), NAME, IS_DISTINCT, COVER_URL, DATA, CUSTOM_TYPE, handler);
+    SendBirdCreateGroupChannelHandler *handler = new SendBirdCreateGroupChannelHandler(); // `handler` has to be deallocated later.
+    SBDGroupChannel::CreateChannel(vector<wstring>(), NAME, IS_DISTINCT, COVER_URL, DATA, CUSTOM_TYPE, handler);
 }
 ```
 
-To get a channel's Custom Type, read `channel->custom_type`.
+To get a channel's custom type, read `channel->custom_type`.
 
 ### Custom message types
 
-Likewise, you can specify a **Custom Type** for messages in order to categorize them into more specific groups. This custom type takes on the form of a `wstring`, and can be useful in searching or filtering messages.
+A custom type for messages can be specified to categorize them into more specific groups. This custom type takes on the form of a `wstring`, and can be useful in searching for or filtering messages.
 
 > `DATA` and `CUSTOM_TYPE` are both String fields that allow you to append information to your messages. The intended use case is for `CUSTOM_TYPE` to contain information that can subclassify the message (e.g., distinguishing "FILE_IMAGE" and "FILE_AUDIO" type messages). However, both these fields can be flexibly utilized.
 
-To embed a Custom Type into a message, simply pass a String parameter to `SendUserMessage()` or `SendFileMessage()`.
+To embed a custom type into a message, simply pass a `String` argument to a `custom_type` parameter in the `SendUserMessage()` or `SendFileMessage()`.
 
 ```cpp
 #include <SendBird.h>
 
 class SendBirdSendUserMessageHandler : public SBDSendUserMessageInterface {
 public:
-  SendBirdSendUserMessageHandler() {
-  }
-
-  ~SendBirdSendUserMessageHandler() {
-  }
-
-  void CompletionHandler(SBDUserMessage *user_message, SBDError *error) {
-    if (error != NULL) {
-      // Error Handlling.
-
-      // Deallocate error.
-      delete error;
-
-      return;
+    SendBirdSendUserMessageHandler() {
     }
-
-    // Handle `user_message`.
-  }
+    
+    ~SendBirdSendUserMessageHandler() {
+    }
+    
+    void CompletionHandler(SBDUserMessage *user_message, SBDError *error) {
+        if (error != NULL) {
+            // Error Handlling.
+            // Deallocate error.
+            delete error;
+            return;
+        }
+        
+        // Handle `user_message`.
+    }
 };
 
 
 void SendUserMessage() {
-  SendBirdSendUserMessageHandler *handler = new SendBirdSendUserMessageHandler(); // `handler` has to be deallocated later.
-
-  // `SendUserMessage()` belongs to `SBDBaseChannel` class, so it can be used by `SBDOpenChannel` and `SBDGroupChannel` instance.
-  // TARGET_LANGUAGES is vector<wstring> type. If you don't have to set it, set vector<wstring>().
-  channel->SendUserMessage(MESSAGE_TEXT, DATA, CUSTOM_TYPE, vector<wstring>(), handler);
+    SendBirdSendUserMessageHandler *handler = new SendBirdSendUserMessageHandler(); // `handler` has to be deallocated later.
+    
+    // `SendUserMessage()` belongs to `SBDBaseChannel` class, so it can be used by `SBDOpenChannel` and `SBDGroupChannel` instance.
+    // TARGET_LANGUAGES is vector<wstring> type. If you don't have to set it, set vector<wstring>().
+    channel->SendUserMessage(MESSAGE_TEXT, DATA, CUSTOM_TYPE, vector<wstring>(), handler);
 }
 ```
 
-To get a message's Custom Type, read `message->custom_type`.
+To get a message's custom type, read `message->custom_type`.
+
+### File Message thumbnails
+
+> This is one of Sendbird's **premium features**. Contact our [sales team](https://get.sendbird.com/talk-to-sales.html) for further assistance.
+
+When sending an image file, you can create a thumbnail of the image, which you can fetch and render into your UI. Up to **3** different dimensions can be specified to generate thumbnail images which can be convenient for supporting various display densities.
+
+Supported file types are files whose **MIME type** is `image/*` or `video/*`.
+
+> The SDK does not support creating thumbnails when [sending a File Message via a file URL](#group-channel-3-send-a-message).
+
+Steps to create a thumbnail:
+
+1. Create a `vector` of `SBDThumbnailSize` objects to pass to the `SendFileMessageWithPath()`. 
+2. A `SBDThumbnailSize` can be created with the constructor `SBDThumbnailSize()`, where the values specify pixels. 
+3. The `completion_handler` callback of `SBDSendFileMessageInterface` will subsequently return a vector of `SBDThumbnail` objects in the file message object that each contain the URL of the generated thumbnail image file.
+
+```cpp
+class SendBirdSendFileMessageHandler : public SBDSendFileMessageInterface {
+public:
+    SendBirdSendFileMessageHandler() {
+    
+    }
+    
+    ~SendBirdSendFileMessageHandler() {
+    
+    }
+    
+    void CompletionHandler(SBDFileMessage *file_message, SBDError *error) {
+        if (error != NULL) {
+            // Error Handlling.
+            // Deallocate error.
+            delete error;
+            return;
+        }
+        
+        // file_message->thumbnails has the thumbnails' information.
+    }
+};
+
+void SendFileMessage() {
+    vector<SBDThumbnailSize> thumbnail_sizes;
+    thumbnail_sizes.push_back(SBDThumbnailSize(320, 320));
+    thumbnail_sizes.push_back(SBDThumbnailSize(160, 160));
+    
+    SendBirdSendFileMessageHandler *handler = new SendBirdSendFileMessageHandler(); // `handler` has to be deallocated later.
+    channel->SendFileMessageWithPath(FILE_PATH, FILE_MIME_TYPE, thumbnail_sizes, DATA, CUSTOM_TYPE, handler));	
+}
+```
+
+`max_width` and `max_height` specify the maximum dimensions of the thumbnail. Your image will be scaled down evenly to fit within the bounds of (`max_width`, `max_height`). Note that if the original image is smaller than the specified dimensions, the thumbnail will not be scaled. The `GetUrl()` returns the location of the generated thumbnail file within the SendBird servers.
 
 ### Message auto-translation
 
-> This feature is not available under the Free plan. Contact [sales@sendbird.com](mailto:sales@sendbird.com) if you wish to implement this functionality.
+> This is one of Sendbird's **premium features**. Contact our [sales team](https://get.sendbird.com/talk-to-sales.html) for further assistance.
 
-SendBird makes it possible for messages to be sent in different languages through its auto-translation feature.
-Pass in a `vector` of language codes to SendUserMessage()` to request translated messages in the corresponding languages.
+Sendbird makes it possible for messages to be sent in different languages through its auto-translation feature. Pass in a `vector` of language codes to the `SendUserMessage()` to request translated messages in the corresponding languages.
 
 ```cpp
 #include <SendBird.h>
 
 class SendBirdSendUserMessageHandler : public SBDSendUserMessageInterface {
 public:
-  SendBirdSendUserMessageHandler() {
-  }
-
-  ~SendBirdSendUserMessageHandler() {
-  }
-
-  void CompletionHandler(SBDUserMessage *user_message, SBDError *error) {
-    if (error != NULL) {
-      // Error Handlling.
-
-      // Deallocate error.
-      delete error;
-
-      return;
+    SendBirdSendUserMessageHandler() {
     }
-
-    // Handle `user_message`.
-  }
+    
+    ~SendBirdSendUserMessageHandler() {
+    }
+    
+    void CompletionHandler(SBDUserMessage *user_message, SBDError *error) {
+        if (error != NULL) {
+            // Error Handlling.
+            // Deallocate error.
+            delete error;
+            return;
+        }
+        
+        // Handle `user_message`.
+    }
 };
 
 
 void SendUserMessage() {
-  SendBirdSendUserMessageHandler *handler = new SendBirdSendUserMessageHandler(); // `handler` has to be deallocated later.
-
-  // `SendUserMessage()` belongs to `SBDBaseChannel` class, so it can be used by `SBDOpenChannel` and `SBDGroupChannel` instance.
-
-  vector<wstring> target_langs;
-
-  target_langs.push_back(L"es");
-  target_langs.push_back(L"ko");
-
-  channel->SendUserMessage(MESSAGE_TEXT, DATA, CUSTOM_TYPE, target_langs, handler);
+    SendBirdSendUserMessageHandler *handler = new SendBirdSendUserMessageHandler(); // `handler` has to be deallocated later.
+    
+    // `SendUserMessage()` belongs to `SBDBaseChannel` class, so it can be used by `SBDOpenChannel` and `SBDGroupChannel` instance.
+    vector<wstring> target_langs;
+    target_langs.push_back(L"es");
+    target_langs.push_back(L"ko");
+    
+    channel->SendUserMessage(MESSAGE_TEXT, DATA, CUSTOM_TYPE, target_langs, handler);
 }
 ```
 
-You can obtain translations of a message using `user_message->translations`. This method returns a `map<wstring, wstring>` containing the language codes and translations.
+Use `user_message->translations` to get a translated version of a message. This method returns a `map<wstring, wstring>` which contains the language codes and translated version of the message.
 
 ```cpp
 class SendBirdChannelEventHandler : public SBDChannelInterface {
 public:
-  // ...
-
-  void MessageReceived(SBDBaseChannel *channel, SBDBaseMessage *message) {
-    vector<wstring> translations = (SBDUserMessage *)message;
-    wstring es_translation = translations[L"es"];
-
-    // Display translation in UI.
-  }
-
-  // ...
+    // ...
+    
+    void MessageReceived(SBDBaseChannel *channel, SBDBaseMessage *message) {
+        vector<wstring> translations = (SBDUserMessage *)message;
+        wstring es_translation = translations[L"es"];
+        
+        // Display translation in UI.
+    }
+    
+    // ...
 };
 ```
 
@@ -2406,648 +2495,584 @@ public:
 | sw            | Kiswahili           | yua           | Yucatec Maya       |
 | tlh           | Klingon             |     -         |          -         |
 
-### File Message thumbnails
-
-> This feature is not available under the Free plan. Contact [sales@sendbird.com](mailto:sales@sendbird.com) if you wish to implement this functionality.
-
-When sending an image file, you can choose to create thumbnails of the image, which you can fetch and render into your UI. You can specify up to **3** different dimensions to generate thumbnail images in, which can be convenient for supporting various display densities.
-
-> Supported file types are files whose **MIME type** is `image/*` or `video/*`.
-
-> The SDK does not support creating thumbnails when [sending a File Message via a file URL](#open_channel_3_sending_messages).
-
-Create a `vector` of `SBDThumbnailSize` objects to pass to `SendFileMessageWithPath()`. A `SBDThumbnailSize` can be created with the constructor `SBDThumbnailSize()`, where the values specify **pixels**. The `completion_handler` callback of `SBDSendFileMessageInterface` will subsequently return a `vector` of `SBDThumbnail` objects in the file message object that each contain the URL of the generated thumbnail image file.
-
-```cpp
-class SendBirdSendFileMessageHandler : public SBDSendFileMessageInterface {
-public:
-  SendBirdSendFileMessageHandler() {
-
-  }
-
-  ~SendBirdSendFileMessageHandler() {
-
-  }
-
-  void CompletionHandler(SBDFileMessage *file_message, SBDError *error) {
-    if (error != NULL) {
-      // Error Handlling.
-
-      // Deallocate error.
-      delete error;
-
-      return;
-    }
-
-    // file_message->thumbnails has the thumbnails' information.
-  }
-};
-
-void SendFileMessage() {
-  vector<SBDThumbnailSize> thumbnail_sizes;
-  thumbnail_sizes.push_back(SBDThumbnailSize(320, 320));
-  thumbnail_sizes.push_back(SBDThumbnailSize(160, 160));
-
-  SendBirdSendFileMessageHandler *handler = new SendBirdSendFileMessageHandler(); // `handler` has to be deallocated later.
-  channel->SendFileMessageWithPath(FILE_PATH, FILE_MIME_TYPE, thumbnail_sizes, DATA, CUSTOM_TYPE, handler));	
-}
-```
-
-`max_width` and `max_height` specify the maximum dimensions of the thumbnail. Your image will be scaled down evenly to fit within the bounds of (`max_width`, `max_height`). Note that if the original image is smaller than the specified dimensions, the thumbnail will not be scaled. `GetUrl()` returns the location of the generated thumbnail file within the SendBird servers.
-
-## Channel Metadata
-
-With **MetaData** and **MetaCounters**, you can store additional information within a channel.
 
 
-**MetaData** allows you to store a `map` of wstring key-value pairs in a channel instance.
-If your aim is to store an integer with atomic increasing/decreasing operations, you should use a **MetaCounters** instead.
+## Channel metadata & metacounter
 
-Use cases for MetaData/Counters could include tracking the number of likes, the background color, or a long description of the channel, which can each be fetched and rendered into the UI.
+With channel metadata and metacounter, you can store additional information within a channel.
 
-### MetaData
+Channel metadata allows you to store a `map` of `wstring` **key-value** pairs in a channel instance. If your aim is to store an integer with atomic increasing/decreasing operations, you should use a metacounter instead.
 
-MetaData is a `map<wstring, wstring>` that is stored within a channel. Its uses are very flexible, allowing you to customize a channel to fit you and your users' needs.
+Use cases for metadata and metacounter include: tracking the number of likes, setting the background color, creating a long description of the channel. All of these can be fetched and rendered into the UI.
+
+### Channel metadata
+
+Channel metadata is a `map<wstring, wstring>` that is stored within a channel. Its uses are very flexible, allowing you to customize a channel to fit you and your users' needs.
 
 #### Create
-Storing MetaData into a channel simply requires creation of a `map<wstring, wstring>`, then passing it as an argument when calling `CreateMetaData()`. You can store multiple key-value pairs in the dictionary.
+
+Steps to creating metadata:
+
+1. To store metadata into a channel, create a `map<wstring, wstring>`.
+2. Pass it as an argument when calling the `CreateMetaData()`. You can store multiple **key-value** pairs in the dictionary.
 
 ```cpp
 #include <SendBird.h>
 
 class SendBirdCreateChannelMetaDataHandler : public SBDCreateChannelMetaDataInterface {
 public:
-  SendBirdCreateChannelMetaDataHandler() {
-
-  }
-
-  ~SendBirdCreateChannelMetaDataHandler() {
-
-  }
-
-  void CompletionHandler(map<wstring, wstring> meta_data, SBDError *error) {
-    if (error != NULL) {
-      // Error Handlling.
-
-      // Deallocate error.
-      delete error;
-
-      return;
+    SendBirdCreateChannelMetaDataHandler() {
+    
     }
-
-  }
+    
+    ~SendBirdCreateChannelMetaDataHandler() {
+    
+    }
+    
+    void CompletionHandler(map<wstring, wstring> meta_data, SBDError *error) {
+        if (error != NULL) {
+            // Error Handlling.
+            // Deallocate error.
+            delete error;
+            return;
+        }
+    }
 };
 
 class SendBirdGetOpenChannelHandler : public SBDGetOpenChannelInterface {
 public:
-  SendBirdGetOpenChannelHandler() {
-
-  }
-
-  ~SendBirdGetOpenChannelHandler() {
-
-  }
-
-  void CompletionHandler(SBDOpenChannel *channel, SBDError *error) {
-    if (error != NULL) {
-      // Error Handlling.
-
-      // Deallocate error.
-      delete error;
-
-      return;
+    SendBirdGetOpenChannelHandler() {
+    
     }
-
-    map<wstring, wstring> meta_data;
-
-    meta_data[KEY_A] = VALUE_A;
-    meta_data[KEY_B] = VALUE_B;
-
-    SendBirdCreateChannelMetaDataHandler *handler = new SendBirdCreateChannelMetaDataHandler(); // `handler` has to be deallocated later.
-    channel->CreateMetaData(meta_data, handler);
-    // Do not deallocate the channel instance.
-  }
+    
+    ~SendBirdGetOpenChannelHandler() {
+    
+    }
+    
+    void CompletionHandler(SBDOpenChannel *channel, SBDError *error) {
+        if (error != NULL) {
+            // Error Handlling.
+            // Deallocate error.
+            delete error;
+            return;
+        }
+        
+        map<wstring, wstring> meta_data;
+        meta_data[KEY_A] = VALUE_A;
+        meta_data[KEY_B] = VALUE_B;
+        
+        SendBirdCreateChannelMetaDataHandler *handler = new SendBirdCreateChannelMetaDataHandler(); // `handler` has to be deallocated later.
+        channel->CreateMetaData(meta_data, handler);
+        
+        // Do not deallocate the channel instance.
+    }
 };
 
 void GetOpenChannel() {
-  SendBirdGetOpenChannelHandler *handler = new SendBirdGetOpenChannelHandler(); // `handler` has to be deallocated later.
-  SBDOpenChannel::GetChannel(CHANNEL_URL, handler);
+    SendBirdGetOpenChannelHandler *handler = new SendBirdGetOpenChannelHandler(); // `handler` has to be deallocated later.
+    SBDOpenChannel::GetChannel(CHANNEL_URL, handler);
 }
 ```
 
 #### Update
-The process for updating MetaData is identical to creation. Values will be updated for existing keys, while new key-value pairs will be added.
+
+The process for updating metadata is identical to creation. Values will be updated for existing keys, while new **key-value** pairs will be added.
 
 ```cpp
 class SendBirdUpdateChannelMetaDataHandler : public SBDUpdateChannelMetaDataInterface {
 public:
-  SendBirdUpdateChannelMetaDataHandler() {
-
-  }
-
-  ~SendBirdUpdateChannelMetaDataHandler() {
-
-  }
-
-  void CompletionHandler(map<wstring, wstring> meta_data, SBDError *error) {
-    if (error != NULL) {
-      // Error Handlling.
-
-      // Deallocate error.
-      delete error;
-
-      return;
+    SendBirdUpdateChannelMetaDataHandler() {
+    
     }
+    
+    ~SendBirdUpdateChannelMetaDataHandler() {
 
-  }
+    }
+    
+    void CompletionHandler(map<wstring, wstring> meta_data, SBDError *error) {
+        if (error != NULL) {
+            // Error Handlling.
+            // Deallocate error.
+            delete error;
+            return;
+        }
+    }
 };
 
 class SendBirdGetOpenChannelHandler : public SBDGetOpenChannelInterface {
 public:
-  SendBirdGetOpenChannelHandler() {
-
-  }
-
-  ~SendBirdGetOpenChannelHandler() {
-
-  }
-
-  void CompletionHandler(SBDOpenChannel *channel, SBDError *error) {
-    if (error != NULL) {
-      // Error Handlling.
-
-      // Deallocate error.
-      delete error;
-
-      return;
+    SendBirdGetOpenChannelHandler() {
+    
     }
-
-    map<wstring, wstring> meta_data;
-
-    meta_data[KEY_B] = VALUE_B;
-    meta_data[KEY_C] = VALUE_C;
-
-    SendBirdUpdateChannelMetaDataHandler *handler = new SendBirdUpdateChannelMetaDataHandler(); // `handler` has to be deallocated later.
-    channel->UpdateMetaData(meta_data, handler);
-    // Do not deallocate the channel instance.
-  }
+    
+    ~SendBirdGetOpenChannelHandler() {
+    
+    }
+    
+    void CompletionHandler(SBDOpenChannel *channel, SBDError *error) {
+        if (error != NULL) {
+            // Error Handlling.
+            // Deallocate error.
+            delete error;
+            return;
+        }
+        
+        map<wstring, wstring> meta_data;
+        meta_data[KEY_B] = VALUE_B;
+        meta_data[KEY_C] = VALUE_C;
+        
+        SendBirdUpdateChannelMetaDataHandler *handler = new SendBirdUpdateChannelMetaDataHandler(); // `handler` has to be deallocated later.
+        channel->UpdateMetaData(meta_data, handler);
+        
+        // Do not deallocate the channel instance.
+    }
 };
 
 void GetOpenChannel() {
-  SendBirdGetOpenChannelHandler *handler = new SendBirdGetOpenChannelHandler(); // `handler` has to be deallocated later.
-  SBDOpenChannel::GetChannel(CHANNEL_URL, handler);
+    SendBirdGetOpenChannelHandler *handler = new SendBirdGetOpenChannelHandler(); // `handler` has to be deallocated later.
+    SBDOpenChannel::GetChannel(CHANNEL_URL, handler);
 }
 ```
 
 #### Get
-Getting stored MetaData requires creating a `vector` of keys to pass as an argument to `GetMetaData()`. The callback `CompletionHandler` of `SBDGetChannelMetaDataInterface` returns a `map<wstring, wstring>` containing the corresponding key-value pairs.
+
+Getting stored metadata requires creating a `vector` of keys to pass as an argument to the `GetMetaData()`. The callback `CompletionHandler` of `SBDGetChannelMetaDataInterface` returns a `map<wstring, wstring>` containing the corresponding **key-value** pairs.
 
 ```cpp
 class SendBirdGetChannelMetaDataHandler : public SBDGetChannelMetaDataInterface {
 public:
-  SendBirdGetChannelMetaDataHandler() {
-
-  }
-
-  ~SendBirdGetChannelMetaDataHandler() {
-
-  }
-
-  void CompletionHandler(map<wstring, wstring> meta_data, SBDError *error) {
-    if (error != NULL) {
-      // Error Handlling.
-
-      // Deallocate error.
-      delete error;
-
-      return;
+    SendBirdGetChannelMetaDataHandler() {
+    
     }
-
+    
+    ~SendBirdGetChannelMetaDataHandler() {
+    
+    }
+    
+    void CompletionHandler(map<wstring, wstring> meta_data, SBDError *error) {
+        if (error != NULL) {
+            // Error Handlling.
+            // Deallocate error.
+            delete error;
+            return;
+        }
+    }
 };
 
 class SendBirdGetOpenChannelHandler : public SBDGetOpenChannelInterface {
 public:
-  SendBirdGetOpenChannelHandler() {
-
-  }
-
-  ~SendBirdGetOpenChannelHandler() {
-
-  }
-
-  void CompletionHandler(SBDOpenChannel *channel, SBDError *error) {
-    if (error != NULL) {
-      // Error Handlling.
-
-      // Deallocate error.
-      delete error;
-
-      return;
+    SendBirdGetOpenChannelHandler() {
+    
     }
-
-    vector<wstring> keys;
-    keys.push_back(KEY_A);
-    keys.push_back(KEY_C);
-
-    SendBirdGetChannelMetaDataHandler *handler = new SendBirdGetChannelMetaDataHandler(); // `handler` has to be deallocated later.
-    channel->GetMetaData(keys, handler);
-    // Do not deallocate the channel instance.
-  }
+    
+    ~SendBirdGetOpenChannelHandler() {
+    
+    }
+    
+    void CompletionHandler(SBDOpenChannel *channel, SBDError *error) {
+        if (error != NULL) {
+            // Error Handlling.
+            // Deallocate error.
+            delete error;
+            return;
+        }
+        
+        vector<wstring> keys;
+        keys.push_back(KEY_A);
+        keys.push_back(KEY_C);
+        
+        SendBirdGetChannelMetaDataHandler *handler = new SendBirdGetChannelMetaDataHandler(); // `handler` has to be deallocated later.
+        channel->GetMetaData(keys, handler);
+        
+        // Do not deallocate the channel instance.
+    }
 };
 
 void GetOpenChannel() {
-  SendBirdGetOpenChannelHandler *handler = new SendBirdGetOpenChannelHandler(); // `handler` has to be deallocated later.
-  SBDOpenChannel::GetChannel(CHANNEL_URL, handler);
+    SendBirdGetOpenChannelHandler *handler = new SendBirdGetOpenChannelHandler(); // `handler` has to be deallocated later.
+    SBDOpenChannel::GetChannel(CHANNEL_URL, handler);
 }
 ```
 
-### MetaCounter
+### Channel metacounter
 
-A MetaCounter is a `map<wstring, int64_t>` that is stored within a channel instance. Its primary uses are to track and update discrete indicators within a channel.
+A Channel metacounter is a `map<wstring, int64_t>` that is stored within a channel instance. Its primary uses are to track and update discrete indicators within a channel.
 
 #### Create
-Storing a MetaCounter into a channel simply requires creation of a `map<wstring, int64_t>`, then passing it as an argument when calling `CreateMetaCounters()`. You can store multiple key-value pairs in the dictionary.
+
+Storing a MetaCounter into a channel simply requires creation of a `map<wstring, int64_t>`, then passing it as an argument when calling `CreateMetaCounters()`. You can store multiple **key-value** pairs in the dictionary.
 
 ```cpp
 class SendBirdCreateChannelMetaCountersHandler : public SBDCreateChannelMetaCountersInterface {
 public:
-  SendBirdCreateChannelMetaCountersHandler() {
-
-  }
-
-  ~SendBirdCreateChannelMetaCountersHandler() {
-
-  }
-
-  void CompletionHandler(map<wstring, int64_t> meta_counters, SBDError *error) {
-    if (error != NULL) {
-      // Error Handlling.
-
-      // Deallocate error.
-      delete error;
-
-      return;
+    SendBirdCreateChannelMetaCountersHandler() {
+    
     }
-  }
+    
+    ~SendBirdCreateChannelMetaCountersHandler() {
+    
+    }
+    
+    void CompletionHandler(map<wstring, int64_t> meta_counters, SBDError *error) {
+        if (error != NULL) {
+            // Error Handlling.
+            // Deallocate error.
+            delete error;
+            return;
+        }
+    }
 };
 
 class SendBirdGetOpenChannelHandler : public SBDGetOpenChannelInterface {
 public:
-  SendBirdGetOpenChannelHandler() {
-
-  }
-
-  ~SendBirdGetOpenChannelHandler() {
-
-  }
-
-  void CompletionHandler(SBDOpenChannel *channel, SBDError *error) {
-    if (error != NULL) {
-      // Error Handlling.
-
-      // Deallocate error.
-      delete error;
-
-      return;
+    SendBirdGetOpenChannelHandler() {
+    
     }
-
-    map<wstring, int64_t> meta_counters;
-
-    meta_counters[KEY_A] = 10;
-    meta_counters[KEY_B] = 10;
-
-    SendBirdCreateChannelMetaCountersHandler *handler = new SendBirdCreateChannelMetaCountersHandler(); // `handler` has to be deallocated later.
-    channel->CreateMetaCounters(meta_counters, handler);
-    // Do not deallocate the channel instance.
-  }
+    
+    ~SendBirdGetOpenChannelHandler() {
+    
+    }
+    
+    void CompletionHandler(SBDOpenChannel *channel, SBDError *error) {
+        if (error != NULL) {
+            // Error Handlling.
+            // Deallocate error.
+            delete error;
+            return;
+        }
+        
+        map<wstring, int64_t> meta_counters;
+        meta_counters[KEY_A] = 10;
+        meta_counters[KEY_B] = 10;
+        
+        SendBirdCreateChannelMetaCountersHandler *handler = new SendBirdCreateChannelMetaCountersHandler(); // `handler` has to be deallocated later.
+        channel->CreateMetaCounters(meta_counters, handler);
+        
+        // Do not deallocate the channel instance.
+    }
 };
 
 void GetOpenChannel() {
-  SendBirdGetOpenChannelHandler *handler = new SendBirdGetOpenChannelHandler(); // `handler` has to be deallocated later.
-  SBDOpenChannel::GetChannel(CHANNEL_URL, handler);
+    SendBirdGetOpenChannelHandler *handler = new SendBirdGetOpenChannelHandler(); // `handler` has to be deallocated later.
+    SBDOpenChannel::GetChannel(CHANNEL_URL, handler);
 }
 ```
 
 #### Get
-Retrieving stored MetaCounters requires creating a `vector` of keys to pass as an argument to `GetMetaCounters()`. The callback `CompletionHandler` `SBDGetChannelMetaDataInterface` returns a `map<wstring, int64_t>` containing the corresponding key-value pairs.
+
+Retrieving stored metacounters requires creating a `vector` of keys to pass as an argument to the `GetMetaCounters()`. The callback `CompletionHandler` `SBDGetChannelMetaDataInterface` returns a `map<wstring, int64_t>` containing the corresponding **key-value** pairs.
 
 ```cpp
 class SendBirdGetChannelMetaCountersHandler : public SBDGetChannelMetaCountersInterface {
 public:
-  SendBirdGetChannelMetaCountersHandler() {
-
-  }
-
-  ~SendBirdGetChannelMetaCountersHandler() {
-
-  }
-
-  void CompletionHandler(map<wstring, int64_t> meta_counters, SBDError *error) {
-    if (error != NULL) {
-      // Error Handlling.
-
-      // Deallocate error.
-      delete error;
-
-      return;
+    SendBirdGetChannelMetaCountersHandler() {
+    
     }
-  }
+    
+    ~SendBirdGetChannelMetaCountersHandler() {
+    
+    }
+    
+    void CompletionHandler(map<wstring, int64_t> meta_counters, SBDError *error) {
+        if (error != NULL) {
+            // Error Handlling.
+            // Deallocate error.
+            delete error;
+            return;
+        }
+    }
 };
 
 class SendBirdGetOpenChannelHandler : public SBDGetOpenChannelInterface {
 public:
-  SendBirdGetOpenChannelHandler() {
-
-  }
-
-  ~SendBirdGetOpenChannelHandler() {
-
-  }
-
-  void CompletionHandler(SBDOpenChannel *channel, SBDError *error) {
-    if (error != NULL) {
-      // Error Handlling.
-
-      // Deallocate error.
-      delete error;
-
-      return;
+    SendBirdGetOpenChannelHandler() {
+    
     }
-
-    vector<wstring> keys;
-    keys.push_back(KEY_A);
-    keys.push_back(KEY_B);
-
-    SendBirdGetChannelMetaCountersHandler *handler = new SendBirdGetChannelMetaCountersHandler(); // `handler` has to be deallocated later.
-    channel->GetMetaCounters(keys, handler);
-    // Do not deallocate the channel instance.
-  }
+    
+    ~SendBirdGetOpenChannelHandler() {
+    
+    }
+    
+    void CompletionHandler(SBDOpenChannel *channel, SBDError *error) {
+        if (error != NULL) {
+            // Error Handlling.
+            // Deallocate error.
+            delete error;
+            return;
+        }
+        
+        vector<wstring> keys;
+        keys.push_back(KEY_A);
+        keys.push_back(KEY_B);
+        
+        SendBirdGetChannelMetaCountersHandler *handler = new SendBirdGetChannelMetaCountersHandler(); // `handler` has to be deallocated later.
+        channel->GetMetaCounters(keys, handler);
+        
+        // Do not deallocate the channel instance.
+    }
 };
 
 void GetOpenChannel() {
-  SendBirdGetOpenChannelHandler *handler = new SendBirdGetOpenChannelHandler(); // `handler` has to be deallocated later.
-  SBDOpenChannel::GetChannel(CHANNEL_URL, handler);
+    SendBirdGetOpenChannelHandler *handler = new SendBirdGetOpenChannelHandler(); // `handler` has to be deallocated later.
+    SBDOpenChannel::GetChannel(CHANNEL_URL, handler);
 }
 ```
 
 #### Increase
-The increase and decrease operations work similarly to getting MetaCounters, as described above. Create a `vector` of keys to pass to `IncreaseMetaCounters()`, which increments the corresponding MetaCounters by 1.
+
+The increase and decrease operations work similarly to getting metacounters, as described above. Create a `vector` of keys to pass to the `IncreaseMetaCounters()`, which increments the corresponding metacounters by 1.
 
 ```cpp
 class SendBirdIncreaseMetaCountersHandler : public SBDIncreaseMetaCountersInterface {
 public:
-  SendBirdIncreaseMetaCountersHandler() {
-
-  }
-
-  ~SendBirdIncreaseMetaCountersHandler() {
-
-  }
-
-  void CompletionHandler(map<wstring, int64_t> meta_counters, SBDError *error) {
-    if (error != NULL) {
-      // Error Handlling.
-
-      // Deallocate error.
-      delete error;
-
-      return;
+    SendBirdIncreaseMetaCountersHandler() {
+    
     }
-  }
+    
+    ~SendBirdIncreaseMetaCountersHandler() {
+    
+    }
+    
+    void CompletionHandler(map<wstring, int64_t> meta_counters, SBDError *error) {
+        if (error != NULL) {
+            // Error Handlling.
+            // Deallocate error.
+            delete error;
+            return;
+        }
+    }
 };
 
 class SendBirdGetOpenChannelHandler : public SBDGetOpenChannelInterface {
 public:
-  SendBirdGetOpenChannelHandler() {
-
-  }
-
-  ~SendBirdGetOpenChannelHandler() {
-
-  }
-
-  void CompletionHandler(SBDOpenChannel *channel, SBDError *error) {
-    if (error != NULL) {
-      // Error Handlling.
-
-      // Deallocate error.
-      delete error;
-
-      return;
+    SendBirdGetOpenChannelHandler() {
+    
     }
-
-    map<wstring, int64_t> meta_counters;
-
-    meta_counters[KEY_A] = 5;
-
-    SendBirdCreateChannelMetaCountersHandler *handler = new SendBirdCreateChannelMetaCountersHandler(); // `handler` has to be deallocated later.
-    channel->IncreaseMetaCounters(meta_counters, handler);
-    // Do not deallocate the channel instance.
+    
+    ~SendBirdGetOpenChannelHandler() {
+    
+    }
+    
+    void CompletionHandler(SBDOpenChannel *channel, SBDError *error) {
+        if (error != NULL) {
+            // Error Handlling.
+            // Deallocate error.
+            delete error;
+            return;
+        }
+        
+        map<wstring, int64_t> meta_counters;
+        meta_counters[KEY_A] = 5;
+        
+        SendBirdCreateChannelMetaCountersHandler *handler = new SendBirdCreateChannelMetaCountersHandler(); // `handler` has to be deallocated later.
+        channel->IncreaseMetaCounters(meta_counters, handler);
+        
+        // Do not deallocate the channel instance.
   }
 };
 
 void GetOpenChannel() {
-  SendBirdGetOpenChannelHandler *handler = new SendBirdGetOpenChannelHandler(); // `handler` has to be deallocated later.
-  SBDOpenChannel::GetChannel(CHANNEL_URL, handler);
+    SendBirdGetOpenChannelHandler *handler = new SendBirdGetOpenChannelHandler(); // `handler` has to be deallocated later.
+    SBDOpenChannel::GetChannel(CHANNEL_URL, handler);
 }
 ```
 
 #### Decrease
+
 Likewise, pass a `vector` of keys to `DecreaseMetaCounters()`, which decrements the MetaCounters by 1.
 
 ```cpp
 class SendBirdDecreaseMetaCountersHandler : public SBDDecreaseMetaCountersInterface {
 public:
-  SendBirdDecreaseMetaCountersHandler() {
-
-  }
-
-  ~SendBirdDecreaseMetaCountersHandler() {
-
-  }
-
-  void CompletionHandler(map<wstring, int64_t> meta_counters, SBDError *error) {
-    if (error != NULL) {
-      // Error Handlling.
-
-      // Deallocate error.
-      delete error;
-
-      return;
+    SendBirdDecreaseMetaCountersHandler() {
+    
     }
-  }
+    
+    ~SendBirdDecreaseMetaCountersHandler() {
+    
+    }
+    
+    void CompletionHandler(map<wstring, int64_t> meta_counters, SBDError *error) {
+        if (error != NULL) {
+            // Error Handlling.
+            // Deallocate error.
+            delete error;
+            return;
+        }
+    }
 };
 
 class SendBirdGetOpenChannelHandler : public SBDGetOpenChannelInterface {
 public:
-  SendBirdGetOpenChannelHandler() {
-
-  }
-
-  ~SendBirdGetOpenChannelHandler() {
-
-  }
-
-  void CompletionHandler(SBDOpenChannel *channel, SBDError *error) {
-    if (error != NULL) {
-      // Error Handlling.
-
-      // Deallocate error.
-      delete error;
-
-      return;
+    SendBirdGetOpenChannelHandler() {
+    
     }
-
-    map<wstring, int64_t> meta_counters;
-
-    meta_counters[KEY_A] = 5;
-
-    SendBirdDecreaseMetaCountersHandler *handler = new SendBirdDecreaseMetaCountersHandler(); // `handler` has to be deallocated later.
-    channel->DecreaseMetaCounters(meta_counters, handler);
-    // Do not deallocate the channel instance.
-  }
+    
+    ~SendBirdGetOpenChannelHandler() {
+    
+    }
+    
+    void CompletionHandler(SBDOpenChannel *channel, SBDError *error) {
+        if (error != NULL) {
+            // Error Handlling.
+            // Deallocate error.
+            delete error;
+            return;
+        }
+        
+        map<wstring, int64_t> meta_counters;
+        meta_counters[KEY_A] = 5;
+        
+        SendBirdDecreaseMetaCountersHandler *handler = new SendBirdDecreaseMetaCountersHandler(); // `handler` has to be deallocated later.
+        channel->DecreaseMetaCounters(meta_counters, handler);
+        
+        // Do not deallocate the channel instance.
+    }
 };
 
 void GetOpenChannel() {
-  SendBirdGetOpenChannelHandler *handler = new SendBirdGetOpenChannelHandler(); // `handler` has to be deallocated later.
-  SBDOpenChannel::GetChannel(CHANNEL_URL, handler);
+    SendBirdGetOpenChannelHandler *handler = new SendBirdGetOpenChannelHandler(); // `handler` has to be deallocated later.
+    SBDOpenChannel::GetChannel(CHANNEL_URL, handler);
 }
 ```
 
-## Event Handler
+<br />
 
-Event Handlers are crucial components of the SendBird SDK that allow a client to react to server-side events. These handlers contain callback methods that can be overridden to respond to specific chat-related events passed from the server. For example, `channel:didReceiveMessage:` of `SBDChannelDelegate` is triggered whenever a message is received. The specifics of each received message is contained within the `SBDBaseChannel` and `SBDBaseMessage` arguments passed back from the triggering callback.
+## Event handler
 
-By providing its own Event Handlers, the SendBird SDK allows a client to respond to asynchronous events without worrying about the plethora of issues surrounding client-server communication and multithreading. A chat application especially involves rapid exchanges of data that must take place in near real-time across potentially thousands of users. Therefore, the SDK optimizes communication and threading to ensure data integrity between users and servers. Add Event Handlers and implement the necessary callback methods to track events occurring within channels or a user's own device.
+Event handlers are crucial components of Sendbird Chat SDK because these allow a client to react to server-side events. These handlers contain callback methods that can be overridden to respond to specific chat-related events passed from the server. For example, `MessageReceived()` of `SendBirdChannelEventHandler` is triggered whenever a message is received. The specifics of each received message is contained within the `SBDBaseChannel` and `SBDBaseMessage` arguments passed back from the triggering callback.
 
-### Channel Delegate
+By providing its own Event Handlers, Sendbird SDK allows a client to respond to asynchronous events without worrying about various issues that may occur regarding client-server communication and multithreading. A chat application especially involves rapid exchanges of data that must take place in near real-time across potentially thousands of users. Therefore, Sendbird SDK optimizes communication and threading to ensure data integrity between users and server. Add Event Handlers and implement the necessary callback methods to track events occurring within channels or a user's own device.
 
-Register a **SBDChannelDelegate** to receive information whenever events occur within a channel.
+### Channel handler
 
-You can register multiple Channel Delegates. `UNIQUE_HANDLER_ID` is a unique identifier that should be given to each delegate. Typically, Event Handlers would be registered in each view controller in order to stay up to date with changes in the channel, as well as notify the channel of the user's own view controller.
+Register a `SendBirdChannelEventHandler` to receive information whenever events occur within a channel.
+
+You can register multiple Channel Handlers. `UNIQUE_HANDLER_ID` is a unique identifier that should be given to each handler. Typically, Event Handlers would be registered in each view controller in order to stay up to date with changes in the channel, as well as notify the channel of the user's own view controller.
 
 ```cpp
 class SendBirdChannelEventHandler : public SBDChannelInterface {
 public:
-  SendBirdChannelEventHandler() {
-  }
-
-  ~SendBirdChannelEventHandler() {
-  }
-
-  void MessageReceived(SBDBaseChannel *channel, SBDBaseMessage *message) {
-    // Received a chat message
-  }
-
-  void MessageUpdated(SBDBaseChannel *channel, SBDBaseMessage *message) {
-
-  }
-
-  void ReadReceiptUpdated(SBDGroupChannel *channel) {
-    // When read receipt has been updated 
-  }
-
-  void TypingStatusUpdated(SBDGroupChannel *channel) {
-    // When typing status has been updated
-  }
-
-  void InvitationReceived(SBDGroupChannel *channel, vector<SBDUser> invitees, SBDUser inviter) {
-
-  }
-
-  void InvitationDeclined(SBDGroupChannel *channel, SBDUser invitee, SBDUser inviter) {
-
-  }
-
-  void UserJoined(SBDGroupChannel *channel, SBDUser user) {
-    // When a new member joined the group channel
-  }
-
-  void UserLeft(SBDGroupChannel *channel, SBDUser user) {
-    // When a member left the group channel
-  }
-
-  void UserEntered(SBDOpenChannel *channel, SBDUser user) {
-    // When a new user entered the open channe
-  }
-
-  void UserExited(SBDOpenChannel *channel, SBDUser user) {
-    // When a new user left the open channel
-  }
-
-  void UserMuted(SBDOpenChannel *channel, SBDUser user) {
-    // When a user is muted on the open channel
-  }
-
-  void UserUnmuted(SBDOpenChannel *channel, SBDUser user) {
-    // When a user is unmuted on the open channel
-  }
-
-  void UserBanned(SBDOpenChannel *channel, SBDUser user) {
-    // When a user is banned on the open channel
-  }
-
-  void UserUnbanned(SBDOpenChannel *channel, SBDUser user) {
-    // When a user is unbanned on the open channel
-  }
-
-  void ChannelFrozen(SBDOpenChannel *channel) {
-    // When the open channel is frozen
-  }
-
-  void ChannelUnfrozen(SBDOpenChannel *channel) {
-    // When the open channel is unfrozen
-  }
-
-  void ChannelChanged(SBDBaseChannel *channel) {
-    // When a channel property has been changed
-  }
-
-  void ChannelDeleted(wstring channel_url, SBDChannelType channel_type) {
-    // When a channel has been deleted
-  }
-
-  void MessageDeleted(SBDBaseChannel *channel, uint64_t message_id) {
-    // When a message has been deleted
-  }
-
-  void ChannelMetaDataCreated(SBDBaseChannel *channel, map<wstring, wstring> created_meta_data) {
-
-  }
-
-  void ChannelMetaDataUpdated(SBDBaseChannel *channel, map<wstring, wstring> updated_meta_data) {
-
-  }
-
-  void ChannelMetaDataDeleted(SBDBaseChannel *channel, vector<wstring> deleted_meta_data) {
-
-  }
-
-  void ChannelMetaCountersCreated(SBDBaseChannel *channel, map<wstring, int64_t> created_meta_counters) {
-
-  }
-
-  void ChannelMetaCountersUpdated(SBDBaseChannel *channel, map<wstring, int64_t> updated_meta_counters) {
-
-  }
-
-  void ChannelMetaCountersDeleted(SBDBaseChannel *channel, vector<wstring> deleted_meta_counters) {
-
-  }
+    SendBirdChannelEventHandler() {
+    }
+    
+    ~SendBirdChannelEventHandler() {
+    }
+    
+    void MessageReceived(SBDBaseChannel *channel, SBDBaseMessage *message) {
+        // Received a chat message
+    }
+    
+    void MessageUpdated(SBDBaseChannel *channel, SBDBaseMessage *message) {
+    
+    }
+    
+    void ReadReceiptUpdated(SBDGroupChannel *channel) {
+        // When read receipt has been updated
+    }
+    
+    void TypingStatusUpdated(SBDGroupChannel *channel) {
+        // When typing status has been updated
+    }
+    
+    void InvitationReceived(SBDGroupChannel *channel, vector<SBDUser> invitees, SBDUser inviter) {
+    
+    }
+    
+    void InvitationDeclined(SBDGroupChannel *channel, SBDUser invitee, SBDUser inviter) {
+    
+    }
+    
+    void UserJoined(SBDGroupChannel *channel, SBDUser user) {
+        // When a new member joined the group channel
+    }
+    
+    void UserLeft(SBDGroupChannel *channel, SBDUser user) {
+        // When a member left the group channel
+    }
+    
+    void UserEntered(SBDOpenChannel *channel, SBDUser user) {
+        // When a new user entered the open channel
+    }
+    
+    void UserExited(SBDOpenChannel *channel, SBDUser user) {
+        // When a new user left the open channel
+    }
+    
+    void UserMuted(SBDOpenChannel *channel, SBDUser user) {
+        // When a user is muted on the open channel
+    }
+    
+    void UserUnmuted(SBDOpenChannel *channel, SBDUser user) {
+        // When a user is unmuted on the open channel
+    }
+    
+    void UserBanned(SBDOpenChannel *channel, SBDUser user) {
+        // When a user is banned on the open channel
+    }
+    
+    void UserUnbanned(SBDOpenChannel *channel, SBDUser user) {
+        // When a user is unbanned on the open channel
+    }
+    
+    void ChannelFrozen(SBDOpenChannel *channel) {
+        // When the open channel is frozen
+    }
+    
+    void ChannelUnfrozen(SBDOpenChannel *channel) {
+        // When the open channel is unfrozen
+    }
+    
+    void ChannelChanged(SBDBaseChannel *channel) {
+        // When a channel property has been changed
+    }
+    
+    void ChannelDeleted(wstring channel_url, SBDChannelType channel_type) {
+        // When a channel has been deleted
+    }
+    
+    void MessageDeleted(SBDBaseChannel *channel, uint64_t message_id) {
+        // When a message has been deleted
+    }
+    
+    void ChannelMetaDataCreated(SBDBaseChannel *channel, map<wstring, wstring> created_meta_data) {
+    
+    }
+    
+    void ChannelMetaDataUpdated(SBDBaseChannel *channel, map<wstring, wstring> updated_meta_data) {
+    
+    }
+    
+    void ChannelMetaDataDeleted(SBDBaseChannel *channel, vector<wstring> deleted_meta_data) {
+    
+    }
+    
+    void ChannelMetaCountersCreated(SBDBaseChannel *channel, map<wstring, int64_t> created_meta_counters) {
+    
+    }
+    
+    void ChannelMetaCountersUpdated(SBDBaseChannel *channel, map<wstring, int64_t> updated_meta_counters) {
+    
+    }
+    
+    void ChannelMetaCountersDeleted(SBDBaseChannel *channel, vector<wstring> deleted_meta_counters) {
+    
+    }
 };
 
 void InitSendBird() {
-  SBDMain::AddChannelHandler(new SendBirdChannelEventHandler(), UNIQUE_CHANNEL_HANDLER_IDENTIFIER);
+    SBDMain::AddChannelHandler(new SendBirdChannelEventHandler(), UNIQUE_CHANNEL_HANDLER_IDENTIFIER);
 }
 ```
 
-> `ChannelChanged()` is called whenever a one of the following channel properties have been changed :
-* **Push preference** (It can be changed on iOS/Android devices)
-* **Last message** (except in cases where the message is a silent Admin message)
-* **Unread message count**
-* **Name**, **cover image**, **data**, **Custom Type**
-* **Operators** (only applicable to Open Channels)
-* **Distinct** property (only applicable to Group Channels)
+The`ChannelChanged()` is called whenever a one of the following channel properties have been changed:
+
+- **Push preference** (It can be changed on iOS/Android devices)
+- **Last message** (except in cases where the message is a silent admin message)
+- **Unread message count**
+- **Name**, **cover image**, **data**, **custom type**
+- **Operators** (only applicable to open channels)
+- **Distinct** property (only applicable to group channels)
 
 You should remove the `SBDChannelInterface` if the handler is no longer valid.
 
@@ -3055,34 +3080,34 @@ You should remove the `SBDChannelInterface` if the handler is no longer valid.
 SBDMain::RemoveChannelHandler(UNIQUE_CHANNEL_HANDLER_IDENTIFIER);
 ```
 
-### Reconnection Delegate
+### Reconnection handler
 
-Register a **SBDReconnectionInterface** to detect changes in the user's own connection status.
+Register a `SBDReconnectionInterface` to detect changes in the user's own connection status.
+You can register multiple connection handlers. `UNIQUE_HANDLER_ID` is a unique identifier that should be given to each handler. Typically, `ConnectionHandler` would be registered in each view controller in order to monitor the state of the user's connection with Sendbird server.
 
-You can register multiple Connection Delegates. `UNIQUE_HANDLER_ID` is a unique identifier that should be given to each delegate. Typically, Connection Delegates would be registered in each view controller in order to monitor the state of the user's connection with the SendBird servers.
 
 ```cpp
 class SendBirdReconnectEventHandler : public SBDReconnectionInterface {
 public:
-  SendBirdReconnectEventHandler() {
-
-  }
-
-  void Started() {
-    // Network has been disconnected. Auto reconnecting starts.
-  }
-
-  void Succeeded() {
-    // Auto reconnecting succeeded.
-  }
-
-  void Failed() {
-    // Auto reconnecting failed. You should call `connect` to reconnect to SendBird.);
-  }
-
-  void Cancelled() {
-    // Auto reconnecting is cancelled by explicit reconnection.
-  }
+    SendBirdReconnectEventHandler() {
+    
+    }
+    
+    void Started() {
+        // Network has been disconnected. Auto reconnecting starts.
+    }
+    
+    void Succeeded() {
+        // Auto reconnecting succeeded.
+    }
+    
+    void Failed() {
+        // Auto reconnecting failed. You should call `connect` to reconnect to SendBird.);
+    }
+    
+    void Cancelled() {
+        // Auto reconnecting is cancelled by explicit reconnection.
+    }
 };
 ```
 
