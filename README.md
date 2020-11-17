@@ -539,11 +539,108 @@ void CreateOpenChannel() {
 }
 ```
 
-### Getting a list of Open Channels
-You can obtain a list of Open Channels by creating a `SBDOpenChannelListQuery`.
-`LoadNextPage()` returns a list of `SBDOpenChannel` objects.
+### Channel cover images
 
-> You must be connected to SendBird before requesting an Open Channel List.
+When creating a channel, you can add a cover image by specifying an image URL.
+
+```cpp
+#include <SendBird.h>
+
+class SendBirdCreateOpenChannelHandler : public SBDCreateOpenChannelInterface {
+public:
+    SendBirdCreateOpenChannelHandler() {
+    }
+    
+    ~SendBirdCreateOpenChannelHandler() {
+    }
+    
+    void CompletionHandler(SBDOpenChannel *channel, SBDError *error) {
+        if (error != NULL) {
+            // Error Handlling.
+            // Deallocate error.
+            delete error;
+            return;
+        }
+        
+        // The open channel is created.
+        // Do not deallocate `channel` pointer.
+    }
+};
+
+void CreateOpenChannel() {
+    SendBirdCreateOpenChannelHandler *handler = new SendBirdCreateOpenChannelHandler(); // `handler` has to be deallocated later.
+    SBDOpenChannel::CreateChannel(SBD_NULL_WSTRING, SBD_NULL_WSTRING, COVER_URL, SBD_NULL_WSTRING, vector<wstring>(), SBD_NULL_WSTRING, handler);
+}
+```
+
+You can get the cover image URL using `cover_url`. You can also update a channel's cover image by calling `UpdateChannel()`.
+
+### Enter an open channel
+
+A A user must enter an open channel to receive messages. A user can enter up to 10 open channels at once.
+
+Entered open channels are valid only within the current connection. If a user disconnects from or reconnects to Sendbird server, the user must re-enter channels in order to continue receiving messages from the previously entered open channels.
+
+```cpp
+#include <SendBird.h>
+
+class SendBirdEnterOpenChannelHandler : public SBDEnterOpenChannelInterface {
+public:
+    SendBirdEnterOpenChannelHandler() {
+    }
+    
+    ~SendBirdEnterOpenChannelHandler() {
+    }
+    
+    void CompletionHandler(SBDError *error) {
+        if (error != NULL) {
+            // Error Handlling.
+            // Deallocate error.
+            delete error;
+            return;
+        }
+    }
+};
+
+void EnterOpenChannel() {
+    SendBirdEnterOpenChannelHandler *handler = new SendBirdEnterOpenChannelHandler();   // `handler` has to be deallocated later.
+    open_channel->Enter(handler);
+}
+```
+
+### Exit an open channel
+To stop receiving messages from an Open Channel, you must exit the channel.
+
+```cpp
+#include <SendBird.h>
+
+class SendBirdExitOpenChannelHandler : public SBDExitOpenChannelInterface {
+public:
+    SendBirdExitOpenChannelHandler() {
+    
+    }
+    
+    ~SendBirdExitOpenChannelHandler() {
+    
+    }
+    
+    void CompletionHandler(SBDError *error) {
+        // Error Handlling.
+        // Deallocate error.
+        delete error;
+        return;
+    }
+};
+
+void ExitOpenChannel() {
+    SendBirdExitOpenChannelHandler *handler = new SendBirdExitOpenChannelHandler(); // `handler` has to be deallocated later.
+    open_channel->Exit(handler);
+}
+```
+
+### Get a list of open channels
+
+Use the `SBDOpenChannelListQuery.LoadNextPage()` to obtain a list of open channels. This method returns a list of `SBDOpenChannel` objects. You must be connected to Sendbird server before requesting a list of open channels.
 
 ```cpp
 #include <SendBird.h>
@@ -552,200 +649,124 @@ SBDOpenChannelListQuery *query;
 
 class SendBirdOpenChannelListQueryHandler : public SBDLoadNextOpenChannelListInterface {
 public:
-  SendBirdOpenChannelListQueryHandler() {
-
-  }
-
-  ~SendBirdOpenChannelListQueryHandler() {
-
-  }
-
-  void CompletionHandler(vector<SBDOpenChannel *> channels, SBDError *error) {
-    if (error != NULL) {
-      // Error Handlling.
-
-      // Deallocate error.
-      delete error;
-
-      return;
+    SendBirdOpenChannelListQueryHandler() {
+    
     }
-
-    // Do not deallocate the channel items in channels vector.
-  }
+    
+    ~SendBirdOpenChannelListQueryHandler() {
+    
+    }
+    
+    void CompletionHandler(vector<SBDOpenChannel *> channels, SBDError *error) {
+        if (error != NULL) {
+            // Error Handlling.
+            // Deallocate error.
+            delete error;
+            return;
+        }
+        
+        // Do not deallocate the channel items in channels vector.
+    }
 }
 
 void InitQueryInstance() {
-  query = SBDOpenChannel::CreateOpenChannelListQuery();
-  query->limit = 30;
-  query->SetChannelUrlFilter(CHANNEL_URL);
-  query->SetChannelNameFilter(CHANNEL_NAME);
-  query->SetCustomTypeFilter(CUSTOM_TYPE);
+    query = SBDOpenChannel::CreateOpenChannelListQuery();
+    query->limit = 30;
+    query->SetChannelUrlFilter(CHANNEL_URL);
+    query->SetChannelNameFilter(CHANNEL_NAME);
+    query->SetCustomTypeFilter(CUSTOM_TYPE);
 }
 
 void GetOpenChannels() {
-  SendBirdOpenChannelListQueryHandler *handler = new SendBirdOpenChannelListQueryHandler(); // `handler` has to be deallocated later.
-  query->LoadNextPage(handler);
+    SendBirdOpenChannelListQueryHandler *handler = new SendBirdOpenChannelListQueryHandler();   // `handler` has to be deallocated later.
+    query->LoadNextPage(handler);
 }
 ```
 
-### Getting an Open Channel instance with a URL
+### Get an open channel instance with a URL
 
-Since a **channel URL** is a unique identifier of an Open Channel, you can use a URL to retrieve a channel instance. It is important to remember that a user must [enter the channel](#entering-an-open-channel) before being able to send or receive messages within it.
+Since a **channel URL** is a unique identifier of an open channel, use a URL to retrieve a channel instance. It is important to remember that a user must [enter the channel](#enter-an-open-channel) before being able to send or receive messages within the channel.
 
-Store channel URLs to handle lifecycle or state changes in your app. For example, if a user disconnects from SendBird by temporarily switching to another app, you can provide a smooth restoration of the user's state using a stored URL to fetch the appropriate channel instance, then re-entering the user into the channel.
+Store channel URLs to handle lifecycle or state changes in your app. For example,when a user disconnects from Sendbird server by temporarily switching to another app, the stored URL can be used to fetch the appropriate channel instance to provide a smooth restoration of the user’s state. The stored URL can also be used to re-enter the user into the channel.  
 
 ```cpp
 #include <SendBird.h>
 
 class SendBirdGetOpenChannelHandler : public SBDGetOpenChannelInterface {
 public:
-  SendBirdGetOpenChannelHandler() {
-
-  }
-
-  ~SendBirdGetOpenChannelHandler() {
-
-  }
-
-  void CompletionHandler(SBDOpenChannel *channel, SBDError *error) {
-    if (error != NULL) {
-      // Error Handlling.
-
-      // Deallocate error.
-      delete error;
-
-      return;
+    SendBirdGetOpenChannelHandler() {
+    
     }
-
-    // Do not deallocate the channel instance.
-  }
+    
+    ~SendBirdGetOpenChannelHandler() {
+    
+    }
+    
+    void CompletionHandler(SBDOpenChannel *channel, SBDError *error) {
+        if (error != NULL) {
+            // Error Handlling.
+            // Deallocate error.
+            delete error;
+            return;
+        }
+        
+        // Do not deallocate the channel instance.
+    }
 };
 
 void GetOpenChannel() {
-  SendBirdGetOpenChannelHandler *handler = new SendBirdGetOpenChannelHandler(); // `handler` has to be deallocated later.
-  SBDOpenChannel::GetChannel(CHANNEL_URL, handler);
+    SendBirdGetOpenChannelHandler *handler = new SendBirdGetOpenChannelHandler();   // `handler` has to be deallocated later.
+    SBDOpenChannel::GetChannel(CHANNEL_URL, handler);
 }
 ```
 
-### Entering an Open Channel
-A user must enter an Open Channel in order to receive messages.
+### Sending a message
 
-You can enter up to 10 Open Channels at once.
-
-Entered Open Channels are valid only within the current connection. If you disconnect or reconnect to SendBird, you must re-enter channels in order to continue receiving messages.
-
-```cpp
-#include <SendBird.h>
-
-class SendBirdEnterOpenChannelHandler : public SBDEnterOpenChannelInterface {
-public:
-  SendBirdEnterOpenChannelHandler() {
-
-  }
-
-  ~SendBirdEnterOpenChannelHandler() {
-
-  }
-
-  void CompletionHandler(SBDError *error) {
-    if (error != NULL) {
-      // Error Handlling.
-
-      // Deallocate error.
-      delete error;
-
-      return;
-    }
-  }
-};
-
-void EnterOpenChannel() {
-  SendBirdEnterOpenChannelHandler *handler = new SendBirdEnterOpenChannelHandler(); // `handler` has to be deallocated later.
-  open_channel->Enter(handler);
-}
-```
-
-### Exiting an Open Channel
-To stop receiving messages from an Open Channel, you must exit the channel.
-
-```cpp
-#include <SendBird.h>
-
-class SendBirdExitOpenChannelHandler : public SBDExitOpenChannelInterface {
-public:
-  SendBirdExitOpenChannelHandler() {
-
-  }
-
-  ~SendBirdExitOpenChannelHandler() {
-
-  }
-
-  void CompletionHandler(SBDError *error) {
-    // Error Handlling.
-
-    // Deallocate error.
-    delete error;
-
-    return;
-  }
-};
-
-void ExitOpenChannel() {
-  SendBirdExitOpenChannelHandler *handler = new SendBirdExitOpenChannelHandler(); // `handler` has to be deallocated later.
-  open_channel->Exit(handler);
-}
-```
-
-### Sending messages
 Upon entering a channel, a user will be able to send messages of the following types:
 * **UserMessage** : a User text message.
 * **FileMessage** : a User binary message.
 
-You can additionally specify a `CUSTOM_TYPE` to further subclassify a message.
+Furthermore, you can specify a `CUSTOM_TYPE` to subclassify a message.
 
-When you send a text message, you can additionally attach arbitrary strings via a `DATA` field. You can utilize this field to send structured data such as font sizes, font types, or custom JSON objects.
+When you send a text message, you can additionally attach arbitrary strings via a `DATA` field. You can utilize this field to send structured data such as font sizes, font types, or custom `JSON` objects.
 
-Delivery failures (e.g., due to network issues) will return an exception. By implementing the virtual method, `CompletionHandler()`, it is possible to display only the messages that are successfully sent.
+Delivery failures caused by network issues or other reasons will return an exception. By implementing a virtual method, `CompletionHandler()`, it is possible to display only the messages that are successfully sent.
 
 ```cpp
 #include <SendBird.h>
 
 class SendBirdSendUserMessageHandler : public SBDSendUserMessageInterface {
 public:
-  SendBirdSendUserMessageHandler() {
-  }
-
-  ~SendBirdSendUserMessageHandler() {
-  }
-
-  void CompletionHandler(SBDUserMessage *user_message, SBDError *error) {
-    if (error != NULL) {
-      // Error Handlling.
-
-      // Deallocate error.
-      delete error;
-
-      return;
+    SendBirdSendUserMessageHandler() {
     }
-
-    // Handle `user_message`.
-  }
+    
+    ~SendBirdSendUserMessageHandler() {
+    }
+    
+    void CompletionHandler(SBDUserMessage *user_message, SBDError *error) {
+        if (error != NULL) {
+            // Error Handlling.
+            // Deallocate error.
+            delete error;
+            return;
+        }
+        
+        // Handle `user_message`.
+    }
 };
 
 
 void SendUserMessage() {
-  SendBirdSendUserMessageHandler *handler = new SendBirdSendUserMessageHandler(); // `handler` has to be deallocated later.
-
-  // `SendUserMessage()` belongs to `SBDBaseChannel` class, so it can be used by `SBDOpenChannel` and `SBDGroupChannel` instance.
-  // TARGET_LANGUAGES is vector<wstring> type. If you don't have to set it, set vector<wstring>().
-  channel->SendUserMessage(MESSAGE_TEXT, DATA, CUSTOM_TYPE, TARGET_LANGUAGES, handler);
+    SendBirdSendUserMessageHandler *handler = new SendBirdSendUserMessageHandler(); // `handler` has to be deallocated later.
+    
+    // `SendUserMessage()` belongs to `SBDBaseChannel` class, so it can be used by `SBDOpenChannel` and `SBDGroupChannel` instance.
+    // TARGET_LANGUAGES is vector<wstring> type. If you don't have to set it, set vector<wstring>().
+    channel->SendUserMessage(MESSAGE_TEXT, DATA, CUSTOM_TYPE, TARGET_LANGUAGES, handler);
 }
 ```
 
-A user can also send any binary file through SendBird. There are two ways in which you can send a binary file: by sending a **URL**.
-
-By sending a raw file, you can choose to send a file hosted in your own servers by passing in a URL that points to the file. In this case, your file will not be hosted in the SendBird servers, and downloads of the file will occur through your own servers instead.
+A user can also send any binary file through the Chat SDK. There are two ways in which a user can send a binary file: by sending the file itself, or sending a **URL**.
+By sending a raw file, a user can choose to send a file hosted in the user’s own server by passing in a URL that points to the file. In this case, the file will not be hosted in Sendbird server, and downloads of the file will occur through the user’s own server instead.
 
 
 ```cpp
@@ -753,77 +774,75 @@ By sending a raw file, you can choose to send a file hosted in your own servers 
 
 class SendBirdSendFileMessageHandler : public SBDSendFileMessageInterface {
 public:
-  SendBirdSendFileMessageHandler() {
-
-  }
-
-  ~SendBirdSendFileMessageHandler() {
-
-  }
-
-  void CompletionHandler(SBDFileMessage *file_message, SBDError *error) {
-    if (error != NULL) {
-      // Error Handlling.
-
-      // Deallocate error.
-      delete error;
-
-      return;
+    SendBirdSendFileMessageHandler() {
+    
     }
-
-    // Handle `file_message`.
-  }
+    
+    ~SendBirdSendFileMessageHandler() {
+    
+    }
+    
+    void CompletionHandler(SBDFileMessage *file_message, SBDError *error) {
+        if (error != NULL) {
+            // Error Handlling.
+            // Deallocate error.
+            delete error;
+            return;
+        }
+        
+        // Handle `file_message`.
+    }
 };
 
 void SendFileMessage() {
-  SendBirdSendFileMessageHandler *handler = new SendBirdSendFileMessageHandler(); // `handler` has to be deallocated later.
-  channel->SendFileMessage(FILE_URL, FILE_NAME, FILE_SIZE, FILE_TYPE, CUSTOM_DATA, CUSTOM_TYPE, handler);
+    SendBirdSendFileMessageHandler *handler = new SendBirdSendFileMessageHandler(); // `handler` has to be deallocated later.
+    channel->SendFileMessage(FILE_URL, FILE_NAME, FILE_SIZE, FILE_TYPE, CUSTOM_DATA, CUSTOM_TYPE, handler);
 }
 ```
 
-### Receiving messages
-Messages can be received by adding a **[SBDChannelInterface](#event-handler)**.
-A received `SBDBaseMessage` object can be of one of three different types of messages.
+### Receive messages
+
+Add [`SBDChannelInterface`](#event-handler) to receive messages. A received `SBDBaseMessage` object takes one of the three following message types:
 
 * **SBDUserMessage** : a User text message.
 * **SBDFileMessage** : a User binary message.
 * **SBDAdminMessage** : an Admin message which can be sent by an admin through the Platform API.
 
-`UNIQUE_HANDLER_ID` is a unique identifier to register multiple concurrent handlers.
-
+`UNIQUE_HANDLER_ID` is a unique identifier that registers multiple concurrent handlers.
 
 ```cpp
 #include <SendBird.h>
 
 class SendBirdChannelEventHandler : public SBDChannelInterface {
 public:
-  // ...
-
-  void MessageReceived(SBDBaseChannel *channel, SBDBaseMessage *message) {
-
-  }
-
-  // ...
+    // ...
+    
+    void MessageReceived(SBDBaseChannel *channel, SBDBaseMessage *message) {
+    
+    }
+    
+    // ...
 };
 
 void InitChannelEventHandler() {
-  SBDMain::AddChannelHandler(new SendBirdChannelEventHandler(), UNIQUE_HANDLER_ID);
+    SBDMain::AddChannelHandler(new SendBirdChannelEventHandler(), UNIQUE_HANDLER_ID);
 }
 ```
 
-You should remove the channel delegate where the UI is no longer valid.
+The channel handler where the UI is no longer valid should be removed. 
 
 ```cpp
 #include <SendBird.h>
 
 void RemoveChannelHandler() {
-  SBDMain::RemoveChannelHandler(UNIQUE_HANDLER_ID);
+    SBDMain::RemoveChannelHandler(UNIQUE_HANDLER_ID);
 }
 ```
 
-### Loading previous messages
-You can load previous messages by creating a `SBDPreviousMessageListQuery` instance.
-You will be able to display past messages in your UI once they have loaded.
+### Load previous messages
+
+Create a `SBDPreviousMessageListQuery` instance to load previous messages. Past messages in your UI will be displayed once they are loaded. 
+
 
 ```cpp
 #include <SendBird.h>
@@ -832,42 +851,43 @@ SBDPreviousMessageListQuery *query;
 
 class SendBirdLoadPreviousMessageListHandler : public SBDLoadPreviousMessageListInterface {
 public:
-  SendBirdLoadPreviousMessageListHandler() {
-
-  }
-
-  ~SendBirdLoadPreviousMessageListHandler() {
-
-  }
-
-  void CompletionHandler(vector<SBDBaseMessage *> messages, SBDError *error) {
-    // Error Handlling.
-
-    // Deallocate error.
-    delete error;
-
-    return;
-  }
+    SendBirdLoadPreviousMessageListHandler() {
+    
+    }
+    
+    ~SendBirdLoadPreviousMessageListHandler() {
+    
+    }
+    
+    void CompletionHandler(vector<SBDBaseMessage *> messages, SBDError *error) {
+        if (error != NULL) {
+            // Error Handlling.
+            // Deallocate error.
+            delete error;
+            return;
+        }
+    }
 };
 
 void InitQuery() {
-  query = channel->CreatePreviousMessageQuery();
+    query = channel->CreatePreviousMessageQuery();
 }
 
 void GetPreviousMessages() {
-  SendBirdLoadPreviousMessageListHandler *handler = new SendBirdLoadPreviousMessageListHandler(); // `handler` has to be deallocated later.
-  query->LoadNextPage(30, false, handler);
+    SendBirdLoadPreviousMessageListHandler *handler = new SendBirdLoadPreviousMessageListHandler(); // `handler` has to be deallocated later.
+    query->LoadNextPage(30, false, handler);
 }
 ```
 
-Past messages are queried in fixed numbers (30 in the above code). A new `SBDPreviousMessageListQuery` instance will load the most recent `n` messages. Calling `LoadNextPage()` on the same query instance will load `n` messages before that. Therefore, you should store your query instance as a member variable in order to traverse through your entire message history.
+Past messages are queried in fixed numbers as shown in the code above which queried **30**. A new `SBDPreviousMessageListQuery` instance will load the most recent `n` messages. Calling the `LoadNextPage()` on the same query instance will load n messages before that. Therefore, your query instance should be stored as a member variable in order to traverse through your entire message history.
 
-> An important note is that you must receive your first `CompletionHandler()` callback before invoking `LoadNextPage()` again.
+Note that you must receive your first `CompletionHandler()` callback before invoking the `LoadNextPage()` again.
 
-### Loading messages by timestamp
-You can retrieve a set number of messages starting from a specific timestamp.
+### Load messages by timestamp
 
-To load messages sent prior to a specifed timestamp, use `GetPreviousMessagesByTimestamp()` of the channel instance.
+A set number of messages starting from a specific timestamp can be retrieved.
+
+To load messages sent prior to a specified timestamp, use `GetPreviousMessagesByTimestamp()` of the channel instance.
 
 ```cpp
 #include <SendBird.h>
@@ -876,15 +896,59 @@ int64_t timestamp = INT64_MAX;
 
 class SendBirdGetPreviousMessagesHandler : public SBDGetMessagesInterface {
 public:
-  SendBirdGetPreviousMessagesHandler() {
+    SendBirdGetPreviousMessagesHandler() {
+    
+    }
+    
+    ~SendBirdGetPreviousMessagesHandler() {
+    
+    }
+    
+    void CompletionHandler(vector<SBDBaseMessage *> messages, SBDError *error) {
+        if (error != NULL) {
+            // Error Handlling.
+            // Deallocate error.
+            delete error;
+            return;
+        }
+    }
+};
+
+void GetPreviousMessage() {
+    SendBirdGetPreviousMessagesHandler *handler = new SendBirdGetPreviousMessagesHandler(); //  `handler` has to be deallocated later.
+    channel->GetPreviousMessagesByTimestamp(timestamp, limit, reverse, messageType, customType, handler);
+}
+```
+
+- `timestamp` : The reference timestamp.
+- `limit` : The number of messages to load. Note that the actual number of results may be larger than the set value when there are multiple messages retrieved as the earliest message on the same timestamp.
+- `reverse` : Whether to reverse the results.
+- `messageType` : A [`SBDMessageTypeFilter`] enum type. Should be one of `SBDMessageTypeFilterUser`, `SBDMessageTypeFilterFile`, `SBDMessageTypeFilterAdmin`, or `SBDMessageTypeFilterAll`.
+- `customType` : The Custom Type of the messages to be returned.
+
+To load messages sent after a specified timestamp, call the [`GetNextMessagesByTimestamp()`] in a similar fashion. To load results on either side of the reference timestamp, use the [`GetMessagesByTimestamp()`].
+
+### Delete messages
+
+Users are able to delete messages. An error is returned if a user tries to delete messages sent by someone else.
+Channel Operators are able to delete any message in the channel, including those by other users.
+
+Deleting a message fires a `MessageDeleted` event to all other users in the channel.
+
+```cpp
+#include <SendBird.h>
+
+class SendBirdDeleteMessageHandler : public SBDDeleteMessageInterface {
+public:
+  SendBirdDeleteMessageHandler() {
 
   }
 
-  ~SendBirdGetPreviousMessagesHandler() {
+  ~SendBirdDeleteMessageHandler() {
 
   }
-  
-  void CompletionHandler(vector<SBDBaseMessage *> messages, SBDError *error) {
+
+  void CompletionHandler(SBDError *error) {
     if (error != NULL) {
       // Error Handlling.
 
@@ -896,19 +960,31 @@ public:
   }
 };
 
-void GetPreviousMessage() {
-  SendBirdGetPreviousMessagesHandler *handler = new SendBirdGetPreviousMessagesHandler(); // `handler` has to be deallocated later.
-  channel->GetPreviousMessagesByTimestamp(timestamp, limit, reverse, messageType, customType, handler);
+void DeleteMessage() {
+  SendBirdDeleteMessageHandler *handler = new SendBirdDeleteMessageHandler(); // `handler` has to be deallocated later.
+  channel->DeleteMessage(USER_MESSAGE, handler);
 }
 ```
 
-> * `timestamp` : The reference timestamp.
-> * `limit` : The number of messages to load. Note that the actual number of results may be larger than the set value when there are multiple messages with the same timestamp as the earliest message.
-> * `reverse` : Whether to reverse the results.
-> * `messageType` : A [`SBDMessageTypeFilter`] enum type. Should be one of `SBDMessageTypeFilterUser`, `SBDMessageTypeFilterFile`, `SBDMessageTypeFilterAdmin`, or `SBDMessageTypeFilterAll`.
-> * `customType` : The Custom Type of the messages to be returned.
+You can receive a `MessageDeleted()` event using a Channel Interface.
 
-To load messages sent after a specified timestamp, call [`GetNextMessagesByTimestamp()`] in a similar fashion. To load results on either side of the reference timestamp, use [`GetMessagesByTimestamp()`].
+```cpp
+class SendBirdChannelEventHandler : public SBDChannelInterface {
+public:
+  // ...
+
+  void MessageDeleted(SBDBaseChannel *channel, uint64_t message_id) {
+
+  }
+
+  // ...
+};
+
+void InitSendBird() {
+  SBDMain::AddChannelHandler(new SendBirdChannelEventHandler(), UNIQUE_CHANNEL_HANDLER_IDENTIFIER);
+}
+```
+
 
 ### Getting a list of participants in a channel
 Participants are online users who are currently receiving all messages from the Open Channel.
@@ -1045,61 +1121,7 @@ void GetBannedUsers() {
 }
 ```
 
-### Deleting messages
-Users are able to delete messages. An error is returned if a user tries to delete messages sent by someone else.
-Channel Operators are able to delete any message in the channel, including those by other users.
 
-Deleting a message fires a `MessageDeleted` event to all other users in the channel.
-
-```cpp
-#include <SendBird.h>
-
-class SendBirdDeleteMessageHandler : public SBDDeleteMessageInterface {
-public:
-  SendBirdDeleteMessageHandler() {
-
-  }
-
-  ~SendBirdDeleteMessageHandler() {
-
-  }
-
-  void CompletionHandler(SBDError *error) {
-    if (error != NULL) {
-      // Error Handlling.
-
-      // Deallocate error.
-      delete error;
-
-      return;
-    }
-  }
-};
-
-void DeleteMessage() {
-  SendBirdDeleteMessageHandler *handler = new SendBirdDeleteMessageHandler(); // `handler` has to be deallocated later.
-  channel->DeleteMessage(USER_MESSAGE, handler);
-}
-```
-
-You can receive a `MessageDeleted()` event using a Channel Interface.
-
-```cpp
-class SendBirdChannelEventHandler : public SBDChannelInterface {
-public:
-  // ...
-
-  void MessageDeleted(SBDBaseChannel *channel, uint64_t message_id) {
-
-  }
-
-  // ...
-};
-
-void InitSendBird() {
-  SBDMain::AddChannelHandler(new SendBirdChannelEventHandler(), UNIQUE_CHANNEL_HANDLER_IDENTIFIER);
-}
-```
 
 ## Open Channel - Advanced
 
@@ -1111,45 +1133,6 @@ To do so using the Dashboard, navigate to the **Open Channels** tab. Inside the 
 
 > If you are currently developing under the **Free Plan** and therefore cannot access the **Moderation Tools** from the Dashboard, you must send Admin messages through the Platform API.
 
-
-### Channel cover images
-
-When creating a channel, you can add a cover image by specifying an image URL.
-
-```cpp
-#include <SendBird.h>
-
-class SendBirdCreateOpenChannelHandler : public SBDCreateOpenChannelInterface {
-public:
-  SendBirdCreateOpenChannelHandler() {
-  }
-
-  ~SendBirdCreateOpenChannelHandler() {
-  }
-
-  void CompletionHandler(SBDOpenChannel *channel, SBDError *error) {
-    if (error != NULL) {
-      // Error Handlling.
-
-      // Deallocate error.
-      delete error;
-
-      return;
-    }
-    
-    // The open channel is created.
-    // Do not deallocate `channel` pointer.
-  }
-};
-
-void CreateOpenChannel() {
-  SendBirdCreateOpenChannelHandler *handler = new SendBirdCreateOpenChannelHandler(); // `handler` has to be deallocated later.
-
-  SBDOpenChannel::CreateChannel(SBD_NULL_WSTRING, SBD_NULL_WSTRING, COVER_URL, SBD_NULL_WSTRING, vector<wstring>(), SBD_NULL_WSTRING, handler);
-}
-```
-
-You can get the cover image URL using `cover_url`. You can also update a channel's cover image by calling `UpdateChannel()`.
 
 ### Custom channel types
 
