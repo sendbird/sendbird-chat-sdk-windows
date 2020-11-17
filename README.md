@@ -930,64 +930,61 @@ To load messages sent after a specified timestamp, call the [`GetNextMessagesByT
 
 ### Delete messages
 
-Users are able to delete messages. An error is returned if a user tries to delete messages sent by someone else.
-Channel Operators are able to delete any message in the channel, including those by other users.
+Users are able to delete messages. An error is returned if a user tries to delete messages sent by someone else. Channel Operators are able to delete any messages sent by any users in the channel.
 
-Deleting a message fires a `MessageDeleted` event to all other users in the channel.
+Deleting a message triggers a `MessageDeleted` event to all other online users in the channel.
 
 ```cpp
 #include <SendBird.h>
 
 class SendBirdDeleteMessageHandler : public SBDDeleteMessageInterface {
 public:
-  SendBirdDeleteMessageHandler() {
-
-  }
-
-  ~SendBirdDeleteMessageHandler() {
-
-  }
-
-  void CompletionHandler(SBDError *error) {
-    if (error != NULL) {
-      // Error Handlling.
-
-      // Deallocate error.
-      delete error;
-
-      return;
+    SendBirdDeleteMessageHandler() {
+    
     }
-  }
+    
+    ~SendBirdDeleteMessageHandler() {
+    
+    }
+    
+    void CompletionHandler(SBDError *error) {
+        if (error != NULL) {
+            // Error Handlling.
+            // Deallocate error.
+            delete error;
+            return;
+        }
+    }
 };
 
 void DeleteMessage() {
-  SendBirdDeleteMessageHandler *handler = new SendBirdDeleteMessageHandler(); // `handler` has to be deallocated later.
-  channel->DeleteMessage(USER_MESSAGE, handler);
+    SendBirdDeleteMessageHandler *handler = new SendBirdDeleteMessageHandler(); // `handler` has to be deallocated later.
+    channel->DeleteMessage(USER_MESSAGE, handler);
 }
 ```
 
-You can receive a `MessageDeleted()` event using a Channel Interface.
+A `SBDChannelInterface` can be used to receive a `MessageDeleted()` event.
 
 ```cpp
 class SendBirdChannelEventHandler : public SBDChannelInterface {
 public:
-  // ...
-
-  void MessageDeleted(SBDBaseChannel *channel, uint64_t message_id) {
-
-  }
-
-  // ...
+    // ...
+    
+    void MessageDeleted(SBDBaseChannel *channel, uint64_t message_id) {
+    
+    }
+    
+    // ...
 };
 
 void InitSendBird() {
-  SBDMain::AddChannelHandler(new SendBirdChannelEventHandler(), UNIQUE_CHANNEL_HANDLER_IDENTIFIER);
+    SBDMain::AddChannelHandler(new SendBirdChannelEventHandler(), UNIQUE_CHANNEL_HANDLER_IDENTIFIER);
 }
 ```
 
-
 ### Getting a list of participants in a channel
-Participants are online users who are currently receiving all messages from the Open Channel.
+
+Participants are online users who are currently receiving all messages from the open channel that they are in.
 
 ```cpp
 #include <SendBird.h>
@@ -996,54 +993,53 @@ SBDUserListQuery *query;
 
 class SendBirdLoadNextParticipantsHandler : public SBDLoadNextUserListInterface {
 public:
-  SendBirdLoadNextParticipantsHandler() {
-
-  }
-
-  ~SendBirdLoadNextParticipantsHandler() {
-
-  }
-
-  void CompletionHandler(vector<SBDUser> users, SBDError *error) {
-    if (error != NULL) {
-      // Error Handlling.
-
-      // Deallocate error.
-      delete error;
-
-      return;
+    SendBirdLoadNextParticipantsHandler() {
+    
     }
-  }
+    
+    ~SendBirdLoadNextParticipantsHandler() {
+    
+    }
+    
+    void CompletionHandler(vector<SBDUser> users, SBDError *error) {
+        if (error != NULL) {
+            // Error Handlling.
+            // Deallocate error.
+            delete error;
+            return;
+        }
+    }
 };
 
 void InitQuery() {
-  query = open_channel->CreateParticipantListQuery();
-  query->limit = 30;
+    query = open_channel->CreateParticipantListQuery();
+    query->limit = 30;
 }
 
 void GetParticipants() {
-  SendBirdLoadNextParticipantsHandler *handler = new SendBirdLoadNextParticipantsHandler(); // `handler` has to be deallocated later.
-  query->LoadNextPage(handler);
+    SendBirdLoadNextParticipantsHandler *handler = new SendBirdLoadNextParticipantsHandler(); // `handler` has to be deallocated later.
+    query->LoadNextPage(handler);
 }
 ```
 
-### Getting participants' online statuses
-To stay updated on each participant's connection status, you must obtain a new `SBDUserListQuery`, which contains the latest information on each user. To get a `SBDUserListQuery` for a specific channel, call `CreateOpenChannelListQuery()` of `SBDOpenChannel`. If you wish to get the list of all users of your service (application), call `CreateUserListQuery(USER_IDS)` of `SBDMain`.
+### Get participants' online status
 
-You can then check each of the users' connection statuses by referencing `connection_status` of `SBDUser`.
+To stay updated on each participant's connection status, you must obtain a new `SBDUserListQuery`, which contains the latest information on each user. To get a `SBDUserListQuery` for a specific channel, call the `CreateOpenChannelListQuery()` of `SBDOpenChannel`. If you wish to get the list of all users on your application, call the `CreateUserListQuery(USER_IDS)` of `SBDMain`.
 
-> If your application needs to keep track of users' connection statuses in real time, we recommend that you receive a new `SBDUserListQuery` periodically, perhaps in intervals of one minute or more.
+Reference `connection_status` of `SBDUser` to check each user’s connection status. 
 
-`connection_status` can return one of three values:
+If your application needs to keep track of users' connection status in real time, we recommend that you receive a new `SBDUserListQuery` periodically, perhaps in intervals of one minute or more.
 
-* `SBDUserConnectionStatusNotAvailable` : User's status information cannot be reached.
-* `SBDUserConnectionStatusOffline` : User is disconnected from SendBird.
-* `SBDUserConnectionStatusOnline` : User is connected to SendBird.
+`connection_status` can return one of the three following values:
 
-### Getting a list of banned or muted users in a channel
-You can also create a query to get a list of muted or banned users in an Open Channel.
+* `SBDUserConnectionStatusNotAvailable`: A user's status information cannot be reached.
+* `SBDUserConnectionStatusOffline`: A user is disconnected from Sendbird server.
+* `SBDUserConnectionStatusOnline`: A user is connected to Sendbird server.
 
-> This query is only available for users who are registered as operators of the Open Channel.
+### Get a list of banned or muted users in a channel
+
+A query to get a list of muted or banned users in an open channel can be created. 
+This query is only available for users who are registered as operators of the open channel.
 
 ```cpp
 #include <SendBird.h>
@@ -1052,34 +1048,32 @@ SBDUserListQuery *query;
 
 class SendBirdLoadNextBannedUserList : public SBDLoadNextUserListInterface {
 public:
-  SendBirdLoadNextBannedUserList() {
-
-  }
-
-  ~SendBirdLoadNextBannedUserList() {
-
-  }
-
-  void CompletionHandler(vector<SBDUser> users, SBDError *error) {
-    if (error != NULL) {
-      // Error Handlling.
-
-      // Deallocate error.
-      delete error;
-
-      return;
+    SendBirdLoadNextBannedUserList() {
+    
     }
-  }
+    
+    ~SendBirdLoadNextBannedUserList() {
+    
+    }
+    
+    void CompletionHandler(vector<SBDUser> users, SBDError *error) {
+        if (error != NULL) {
+            // Error Handlling.
+            // Deallocate error.
+            delete error;
+            return;
+        }
+    }
 };
 
 void InitQuery() {
-  query = open_channel->CreateMutedUserListQuery();
-  query->limit = 30;
+    query = open_channel->CreateMutedUserListQuery();
+    query->limit = 30;
 }
 
 void GetBannedUsers() {
-  SendBirdLoadNextBannedUserList *handler = new SendBirdLoadNextBannedUserList(); // `handler` has to be deallocated later.
-  query->LoadNextPage(handler);
+    SendBirdLoadNextBannedUserList *handler = new SendBirdLoadNextBannedUserList(); // `handler` has to be deallocated later.
+    query->LoadNextPage(handler);
 }
 ```
 
@@ -1090,49 +1084,46 @@ SBDUserListQuery *query;
 
 class SendBirdLoadNextMutedUserList : public SBDLoadNextUserListInterface {
 public:
-  SendBirdLoadNextMutedUserList() {
-
-  }
-
-  ~SendBirdLoadNextMutedUserList() {
-
-  }
-
-  void CompletionHandler(vector<SBDUser> users, SBDError *error) {
-    if (error != NULL) {
-      // Error Handlling.
-
-      // Deallocate error.
-      delete error;
-
-      return;
+    SendBirdLoadNextMutedUserList() {
+    
     }
-  }
+    
+    ~SendBirdLoadNextMutedUserList() {
+    
+    }
+    
+    void CompletionHandler(vector<SBDUser> users, SBDError *error) {
+        if (error != NULL) {
+            // Error Handlling.
+            // Deallocate error.
+            delete error;
+            return;
+        }
+    }
 };
 
 void InitQuery() {
-  query = open_channel->CreateMutedUserListQuery();
-  query->limit = 30;
+    query = open_channel->CreateMutedUserListQuery();
+    query->limit = 30;
 }
 
 void GetBannedUsers() {
-  SendBirdLoadNextMutedUserList *handler = new SendBirdLoadNextMutedUserList(); // `handler` has to be deallocated later.
-  query->LoadNextPage(handler);
+    SendBirdLoadNextMutedUserList *handler = new SendBirdLoadNextMutedUserList(); // `handler` has to be deallocated later.
+    query->LoadNextPage(handler);
 }
 ```
 
-
+<br />
 
 ## Open Channel - Advanced
 
 ### Admin messages
 
-You can send Admin messages to users in a channel using the [SendBird Dashboard](https://dashboard.sendbird.com) or the [Platform API](/platform).
+Admin messages can be sent to users in a channel using the [Sendbird Dashboard](https://dashboard.sendbird.com/auth/signin) or [Chat Platform API](https://sendbird.com/docs/chat/v3/platform-api/guides/messages#2-send-a-message).
 
-To do so using the Dashboard, navigate to the **Open Channels** tab. Inside the message box, you should see an option to send an Admin message. Admin messages should not be longer than 1000 characters.
+To send Admin messages using Dashboard, navigate to the Open Channels tab. Inside the message box, there is an option to send an Admin message. Admin messages should not be longer than 1,000 characters.
 
-> If you are currently developing under the **Free Plan** and therefore cannot access the **Moderation Tools** from the Dashboard, you must send Admin messages through the Platform API.
-
+If you are currently developing under the Free Plan and therefore cannot access the Moderation Tools from Dashboard, you must send Admin messages through Chat Platform API.
 
 ### Custom channel types
 
@@ -1145,143 +1136,131 @@ When creating a channel, you can additionally specify a **Custom Type** to furth
 
 class SendBirdCreateOpenChannelHandler : public SBDCreateOpenChannelInterface {
 public:
-  SendBirdCreateOpenChannelHandler() {
-  }
-
-  ~SendBirdCreateOpenChannelHandler() {
-  }
-
-  void CompletionHandler(SBDOpenChannel *channel, SBDError *error) {
-    if (error != NULL) {
-      // Error Handlling.
-
-      // Deallocate error.
-      delete error;
-
-      return;
+    SendBirdCreateOpenChannelHandler() {
     }
     
-    // The open channel is created.
-    // Do not deallocate `channel` pointer.
-  }
+    ~SendBirdCreateOpenChannelHandler() {
+    }
+    
+    void CompletionHandler(SBDOpenChannel *channel, SBDError *error) {
+        if (error != NULL) {
+            // Error Handlling.
+            // Deallocate error.
+            delete error;
+            return;
+        }
+        
+        // The open channel is created.
+        // Do not deallocate `channel` pointer.
+    }
 };
 
 void CreateOpenChannel() {
-  SendBirdCreateOpenChannelHandler *handler = new SendBirdCreateOpenChannelHandler(); // `handler` has to be deallocated later.
-
-  SBDOpenChannel::CreateChannel(SBD_NULL_WSTRING, SBD_NULL_WSTRING, SBD_NULL_WSTRING, DATA, vector<wstring>(), CUSTOM_TYPE, handler);
+    SendBirdCreateOpenChannelHandler *handler = new SendBirdCreateOpenChannelHandler(); // `handler` has to be deallocated later.
+    SBDOpenChannel::CreateChannel(SBD_NULL_WSTRING, SBD_NULL_WSTRING, SBD_NULL_WSTRING, DATA, vector<wstring>(), CUSTOM_TYPE, handler);
 }
 ```
 
-To get a channel's Custom Type, read `channel->custom_type`.
+To get a channel's custom type, read `channel->custom_type`.
 
 ### Custom message types
 
-Likewise, you can specify a **Custom Type** for messages in order to categorize them into more specific groups. This custom type takes on the form of a `wstring`, and can be useful in searching or filtering messages.
+When creating a channel, a Custom Type can be additionally specified to further subclassify the channels. This custom type takes on the form of a `wstring`, and can be handy in searching for or filtering channels.
 
-> `DATA` and `CUSTOM_TYPE` are both String fields that allow you to append information to your messages. The intended use case is for `CUSTOM_TYPE` to contain information that can subclassify the message (e.g., distinguishing "FILE_IMAGE" and "FILE_AUDIO" type messages). However, both these fields can be flexibly utilized.
+`DATA` and `CUSTOM_TYPE` are both `String` fields that allow you to append information to your channels. The intended use case is for `CUSTOM_TYPE` to contain information that can subclassify the channel (e.g., distinguishing "School" and "Work" channels). However, both these fields can be flexibly utilized.
 
-To embed a Custom Type into a message, simply pass a String parameter to `SendUserMessage()` or `SendFileMessage()`.
+To embed a custom type into a message, simply pass a `String` argument to the **message** parameter in the `SendUserMessage()` or `SendFileMessage()`.
 
 ```cpp
 #include <SendBird.h>
 
 class SendBirdSendUserMessageHandler : public SBDSendUserMessageInterface {
 public:
-  SendBirdSendUserMessageHandler() {
-  }
-
-  ~SendBirdSendUserMessageHandler() {
-  }
-
-  void CompletionHandler(SBDUserMessage *user_message, SBDError *error) {
-    if (error != NULL) {
-      // Error Handlling.
-
-      // Deallocate error.
-      delete error;
-
-      return;
+    SendBirdSendUserMessageHandler() {
     }
-
-    // Handle `user_message`.
-  }
+    
+    ~SendBirdSendUserMessageHandler() {
+    }
+    
+    void CompletionHandler(SBDUserMessage *user_message, SBDError *error) {
+        if (error != NULL) {
+            // Error Handlling.
+            // Deallocate error.
+            delete error;
+            return;
+        }
+        
+        // Handle `user_message`.
+    }
 };
 
-
 void SendUserMessage() {
-  SendBirdSendUserMessageHandler *handler = new SendBirdSendUserMessageHandler(); // `handler` has to be deallocated later.
-
-  // `SendUserMessage()` belongs to `SBDBaseChannel` class, so it can be used by `SBDOpenChannel` and `SBDGroupChannel` instance.
-  // TARGET_LANGUAGES is vector<wstring> type. If you don't have to set it, set vector<wstring>().
-  channel->SendUserMessage(MESSAGE_TEXT, DATA, CUSTOM_TYPE, vector<wstring>(), handler);
+    SendBirdSendUserMessageHandler *handler = new SendBirdSendUserMessageHandler(); // `handler` has to be deallocated later.
+    // `SendUserMessage()` belongs to `SBDBaseChannel` class, so it can be used by `SBDOpenChannel` and `SBDGroupChannel` instance.
+    // TARGET_LANGUAGES is vector<wstring> type. If you don't have to set it, set vector<wstring>().
+    channel->SendUserMessage(MESSAGE_TEXT, DATA, CUSTOM_TYPE, vector<wstring>(), handler);
 }
 ```
 
-To get a message's Custom Type, read `message->custom_type`.
+To get a message's custom type, read `message->custom_type`.
 
 ### Message auto-translation
 
-> This feature is not available under the Free plan. Contact [sales@sendbird.com](mailto:sales@sendbird.com) if you wish to implement this functionality.
+> This is one of Sendbird's **premium features**. Contact our [sales team](https://get.sendbird.com/talk-to-sales.html) for further assistance.
 
-SendBird makes it possible for messages to be sent in different languages through its auto-translation feature.
-Pass in a `vector` of language codes to SendUserMessage()` to request translated messages in the corresponding languages.
+Sendbird makes it possible for messages to be sent in different languages through its auto-translation feature. Pass in a `vector` of language codes to the `SendUserMessage()` to request translated messages in the corresponding languages.
 
 ```cpp
 #include <SendBird.h>
 
 class SendBirdSendUserMessageHandler : public SBDSendUserMessageInterface {
 public:
-  SendBirdSendUserMessageHandler() {
-  }
-
-  ~SendBirdSendUserMessageHandler() {
-  }
-
-  void CompletionHandler(SBDUserMessage *user_message, SBDError *error) {
-    if (error != NULL) {
-      // Error Handlling.
-
-      // Deallocate error.
-      delete error;
-
-      return;
+    SendBirdSendUserMessageHandler() {
     }
-
-    // Handle `user_message`.
-  }
+    
+    ~SendBirdSendUserMessageHandler() {
+    }
+    
+    void CompletionHandler(SBDUserMessage *user_message, SBDError *error) {
+        if (error != NULL) {
+            // Error Handlling.
+            // Deallocate error.
+            delete error;
+            return;
+        }
+        
+        // Handle `user_message`.
+    }
 };
 
 
 void SendUserMessage() {
-  SendBirdSendUserMessageHandler *handler = new SendBirdSendUserMessageHandler(); // `handler` has to be deallocated later.
-
-  // `SendUserMessage()` belongs to `SBDBaseChannel` class, so it can be used by `SBDOpenChannel` and `SBDGroupChannel` instance.
-
-  vector<wstring> target_langs;
-
-  target_langs.push_back(L"es");
-  target_langs.push_back(L"ko");
-
-  channel->SendUserMessage(MESSAGE_TEXT, DATA, CUSTOM_TYPE, target_langs, handler);
+    SendBirdSendUserMessageHandler *handler = new SendBirdSendUserMessageHandler(); // `handler` has to be deallocated later.
+    
+    // `SendUserMessage()` belongs to `SBDBaseChannel` class, so it can be used by `SBDOpenChannel` and `SBDGroupChannel` instance.
+    vector<wstring> target_langs;
+    target_langs.push_back(L"es");
+    target_langs.push_back(L"ko");
+    
+    channel->SendUserMessage(MESSAGE_TEXT, DATA, CUSTOM_TYPE, target_langs, handler);
 }
 ```
 
-You can obtain translations of a message using `user_message->translations`. This method returns a `map<wstring, wstring>` containing the language codes and translations.
+Use `user_message->translations` to get a translated version of a message. This method returns a `map<wstring, wstring>` which contains the language codes and translated version of the message.
 
 ```cpp
 class SendBirdChannelEventHandler : public SBDChannelInterface {
 public:
-  // ...
-
-  void MessageReceived(SBDBaseChannel *channel, SBDBaseMessage *message) {
-    vector<wstring> translations = (SBDUserMessage *)message;
-    wstring es_translation = translations[L"es"];
-
-    // Display translation in UI.
-  }
-
-  // ...
+    // ...
+    
+    void MessageReceived(SBDBaseChannel *channel, SBDBaseMessage *message) {
+        vector<wstring> translations = (SBDUserMessage *)message;
+        wstring es_translation = translations[L"es"];
+        
+        // Display translation in UI.
+    }
+    
+    // ...
 };
 ```
 
@@ -1320,10 +1299,7 @@ public:
 
 ### Keyword search
 
-You can search for specific channels by adding a keyword to your `SBDOpenChannelListQuery`.
-There are two types of keywords: a **Name Keyword** and a **URL Keyword**.
-
-Adding a Name Keyword to a query will return the list of Open Channels that have the keyword included in their names.
+You can search for specific channels by adding a keyword to `SBDOpenChannelListQuery`. There are two types of keywords: a **Name Keyword** and a **URL Keyword**.
 
 ```cpp
 #include <SendBird.h>
@@ -1332,42 +1308,40 @@ SBDOpenChannelListQuery *query;
 
 class SendBirdOpenChannelListQueryHandler : public SBDLoadNextOpenChannelListInterface {
 public:
-  SendBirdOpenChannelListQueryHandler() {
-
-  }
-
-  ~SendBirdOpenChannelListQueryHandler() {
-
-  }
-
-  void CompletionHandler(vector<SBDOpenChannel *> channels, SBDError *error) {
-    if (error != NULL) {
-      // Error Handlling.
-
-      // Deallocate error.
-      delete error;
-
-      return;
+    SendBirdOpenChannelListQueryHandler() {
+    
     }
-
-    // Do not deallocate the channel items in channels vector.
-    // Returns a List of channels that have "NameKeyword" in their names.
-  }
+    
+    ~SendBirdOpenChannelListQueryHandler() {
+    
+    }
+    
+    void CompletionHandler(vector<SBDOpenChannel *> channels, SBDError *error) {
+        if (error != NULL) {
+            // Error Handlling.
+            // Deallocate error.
+            delete error;
+            return;
+        }
+        
+        // Do not deallocate the channel items in channels vector.
+        // Returns a List of channels that have "NameKeyword" in their names.
+    }
 }
 
 void InitQueryInstance() {
-  query = SBDOpenChannel::CreateOpenChannelListQuery();
-  query->limit = 30;
-  query->SetChannelNameFilter(CHANNEL_NAME);
+    query = SBDOpenChannel::CreateOpenChannelListQuery();
+    query->limit = 30;
+    query->SetChannelNameFilter(CHANNEL_NAME);
 }
 
 void GetOpenChannels() {
-  SendBirdOpenChannelListQueryHandler *handler = new SendBirdOpenChannelListQueryHandler(); // `handler` has to be deallocated later.
-  query->LoadNextPage(handler);
+    SendBirdOpenChannelListQueryHandler *handler = new SendBirdOpenChannelListQueryHandler(); // `handler` has to be deallocated later.
+    query->LoadNextPage(handler);
 }
 ```
 
-Adding a URL Keyword to a query will return the Open Channel whose URL **exactly** matches the given keyword.
+Adding a **URL Keyword** to a query will return the Open Channel whose URL matches the given keyword.
 
 ```cpp
 #include <SendBird.h>
@@ -1376,151 +1350,152 @@ SBDOpenChannelListQuery *query;
 
 class SendBirdOpenChannelListQueryHandler : public SBDLoadNextOpenChannelListInterface {
 public:
-  SendBirdOpenChannelListQueryHandler() {
-
-  }
-
-  ~SendBirdOpenChannelListQueryHandler() {
-
-  }
-
-  void CompletionHandler(vector<SBDOpenChannel *> channels, SBDError *error) {
-    if (error != NULL) {
-      // Error Handlling.
-
-      // Deallocate error.
-      delete error;
-
-      return;
+    SendBirdOpenChannelListQueryHandler() {
+    
     }
-
-    // Do not deallocate the channel items in channels vector.
-    // Returns a List containing a single channel with the URL that matches the URL Keyword.
-  }
+    
+    ~SendBirdOpenChannelListQueryHandler() {
+    
+    }
+    
+    void CompletionHandler(vector<SBDOpenChannel *> channels, SBDError *error) {
+        if (error != NULL) {
+            // Error Handlling.
+            // Deallocate error.
+            delete error;
+            return;
+        }
+        
+        // Do not deallocate the channel items in channels vector.
+        // Returns a List containing a single channel with the URL that matches the URL Keyword.
+    }
 }
 
 void InitQueryInstance() {
-  query = SBDOpenChannel::CreateOpenChannelListQuery();
-  query->limit = 30;
-  query->SetChannelUrlFilter(CHANNEL_URL);
+    query = SBDOpenChannel::CreateOpenChannelListQuery();
+    query->limit = 30;
+    query->SetChannelUrlFilter(CHANNEL_URL);
 }
 
 void GetOpenChannels() {
-  SendBirdOpenChannelListQueryHandler *handler = new SendBirdOpenChannelListQueryHandler(); // `handler` has to be deallocated later.
-  query->LoadNextPage(handler);
+    SendBirdOpenChannelListQueryHandler *handler = new SendBirdOpenChannelListQueryHandler(); // `handler` has to be deallocated later.
+    query->LoadNextPage(handler);
 }
 ```
 
 ### File Message thumbnails
 
-> This feature is not available under the Free plan. Contact [sales@sendbird.com](mailto:sales@sendbird.com) if you wish to implement this functionality.
+> This is one of Sendbird's **premium features**. Contact our [sales team](https://get.sendbird.com/talk-to-sales.html) for further assistance.
 
-When sending an image file, you can choose to create thumbnails of the image, which you can fetch and render into your UI. You can specify up to **3** different dimensions to generate thumbnail images in, which can be convenient for supporting various display densities.
+When sending an image file, you can create a thumbnail of the image, which you can fetch and render into your UI. Up to 3 different dimensions can be specified to generate thumbnail images which can be convenient for supporting various display densities.
 
-> Supported file types are files whose **MIME type** is `image/*` or `video/*`.
+Supported file types are files whose MIME type is `image/*` or `video/*`.
 
-> The SDK does not support creating thumbnails when [sending a File Message via a file URL](#open_channel_3_sending_messages).
+The SDK does not support creating thumbnails when [sending a file message via a file URL](#open-channel-3-send-a-message).
 
-Create a `vector` of `SBDThumbnailSize` objects to pass to `SendFileMessageWithPath()`. A `SBDThumbnailSize` can be created with the constructor `SBDThumbnailSize()`, where the values specify **pixels**. The `completion_handler` callback of `SBDSendFileMessageInterface` will subsequently return a `vector` of `SBDThumbnail` objects in the file message object that each contain the URL of the generated thumbnail image file.
+Steps to create a thumbnail:
+
+1. Create a `vector` of `SBDThumbnailSize` objects to pass to `SendFileMessageWithPath()`. 
+2. A `SBDThumbnailSize` can be created with the constructor `SBDThumbnailSize()`, where the values specify pixels. 
+3. The `completion_handler` callback of `SBDSendFileMessageInterface` will subsequently return a `vector` of `SBDThumbnail` objects in the file message object that each contain the URL of the generated thumbnail image file.
 
 ```cpp
 #include <SendBird.h>
 
 class SendBirdSendFileMessageHandler : public SBDSendFileMessageInterface {
 public:
-  SendBirdSendFileMessageHandler() {
-
-  }
-
-  ~SendBirdSendFileMessageHandler() {
-
-  }
-
-  void CompletionHandler(SBDFileMessage *file_message, SBDError *error) {
-    if (error != NULL) {
-      // Error Handlling.
-
-      // Deallocate error.
-      delete error;
-
-      return;
+    SendBirdSendFileMessageHandler() {
+    
     }
-
-    // file_message->thumbnails has the thumbnails' information.
-  }
+    
+    ~SendBirdSendFileMessageHandler() {
+    
+    }
+    
+    void CompletionHandler(SBDFileMessage *file_message, SBDError *error) {
+        if (error != NULL) {
+            // Error Handlling.
+            // Deallocate error.
+            delete error;
+            return;
+        }
+        
+        // file_message->thumbnails has the thumbnails' information.
+    }
 };
 
 void SendFileMessage() {
-  vector<SBDThumbnailSize> thumbnail_sizes;
-  thumbnail_sizes.push_back(SBDThumbnailSize(320, 320));
-  thumbnail_sizes.push_back(SBDThumbnailSize(160, 160));
-
-  SendBirdSendFileMessageHandler *handler = new SendBirdSendFileMessageHandler(); // `handler` has to be deallocated later.
-  channel->SendFileMessageWithPath(FILE_PATH, FILE_MIME_TYPE, thumbnail_sizes, DATA, CUSTOM_TYPE, handler));		
+    vector<SBDThumbnailSize> thumbnail_sizes;
+    thumbnail_sizes.push_back(SBDThumbnailSize(320, 320));
+    thumbnail_sizes.push_back(SBDThumbnailSize(160, 160));
+    
+    SendBirdSendFileMessageHandler *handler = new SendBirdSendFileMessageHandler(); // `handler` has to be deallocated later.
+    channel->SendFileMessageWithPath(FILE_PATH, FILE_MIME_TYPE, thumbnail_sizes, DATA, CUSTOM_TYPE, handler));		
 }
 ```
 
-`max_width` and `max_height` specify the maximum dimensions of the thumbnail. Your image will be scaled down evenly to fit within the bounds of (`max_width`, `max_height`). Note that if the original image is smaller than the specified dimensions, the thumbnail will not be scaled. `GetUrl()` returns the location of the generated thumbnail file within the SendBird servers.
+`max_width` and `max_height` specify the maximum dimensions of the thumbnail. Your image will be scaled down evenly to fit within the bounds of (`max_width`, `max_height`). Note that if the original image is smaller than the specified dimension, the thumbnail will not be scaled. `GetUrl()` returns the location of the generated thumbnail file within Sendbird server.
 
+<br />
 
-## Group Channel
+## Group channel
 
-A **Group Channel** is a private chat. A user may join the chat only through an invitation by another user who is already a member of the chatroom. A Group Channel can consist of one to hundreds of members. Creating a channel with two members allows 1-to-1 messaging.
+A **group channel** is a private chat. A user may join the chat only through an invitation by another user who is already a member of the chat. A Group Channel can have a single member to hundreds of members. Creating a channel with two members allows 1-on-1 messaging.
 
 A user will automatically receive all messages from the group channels that they are a member of.
 
-### Creating a Group Channel
+### Create a group channel
 
-A Group Channel can be created on demand by a user through the **SendBird SDK**.
+A group channel can be created on demand by a user through Sendbird Chat SDK.
 
-> ** Distinct property ** : A channel with the Distinct property enabled will always be reused for the same members. If a new member is invited, or if a member leaves the channel, then the distinct property is disabled automatically. For example, in the case that a Group Channel with 3 members, **A**, **B**, and **C**, already exists, attempting to create a new channel with the same members will just return a reference to the existing channel.
+- **Distinct property** : The **distinct** property allows a channel to be reused for the same members of a group chat. When the distinct property is set to **true**, attempting to create a new channel with the same members will just return a reference to the pre-existing channel. 
 
-> Consequently, we recommend that you enable the Distinct property in 1-to-1 messaging channels in order to reuse the same channel when a user chooses to directly message a friend. If the property is disabled, the user will create a new channel even if they have had previous conversations with the friend, and therefore will not be able to see or access previously sent messages or data.
+When the property is set to **false**, a new channel will be created even if the two users have had a previous conversation in a channel. In other words, the two users will not be able to access previously sent messages or data. 
+
+Thus, enabling the distinct property for a 1-on-1 message channel is recommended so that the same channel can be reused between two users who were previously engaged in a chat. 
 
 ```cpp
 #include <SendBird.h>
 
 class SendBirdCreateGroupChannelHandler : public SBDCreateGroupChannelInterface {
 public:
-  SendBirdCreateGroupChannelHandler() {
-  }
-
-  ~SendBirdCreateGroupChannelHandler() {
-  }
-
-  void CompletionHandler(SBDGroupChannel *channel, SBDError *error) {
-    if (error != NULL) {
-      // Error Handlling.
-
-      // Deallocate error.
-      delete error;
-
-      return;
+    SendBirdCreateGroupChannelHandler() {
     }
     
-    // The group channel is created.
-    // Do not deallocate `channel` pointer.
-  }
+    ~SendBirdCreateGroupChannelHandler() {
+    }
+    
+    void CompletionHandler(SBDGroupChannel *channel, SBDError *error) {
+        if (error != NULL) {
+            // Error Handlling.
+            // Deallocate error.
+            delete error;
+            return;
+        }
+        
+        // The group channel is created.
+        // Do not deallocate `channel` pointer.
+    }
 };
 
 void CreateGroupChannel() {
-  SendBirdCreateGroupChannelHandler *handler = new SendBirdCreateGroupChannelHandler(); // `handler` has to be deallocated later.
-
-  // Every wstring type parameter is an option. If you don't have to set them, set `SBD_NULL_WSTRING`.
-  // INVITEE_IDS is vector<wstring> type. If you don't have to set it, set vector<wstring>().
-  // IS_DISTINCT is bool type.
-  SBDGroupChannel::CreateChannel(INVITEE_IDS, NAME, IS_DISTINCT, COVER_IMAGE_URL, DATA, CUSTOM_TYPE, handler);
+    SendBirdCreateGroupChannelHandler *handler = new SendBirdCreateGroupChannelHandler(); // `handler` has to be deallocated later.
+    
+    // Every wstring type parameter is an option. If you don't have to set them, set `SBD_NULL_WSTRING`.
+    // INVITEE_IDS is vector<wstring> type. If you don't have to set it, set vector<wstring>().
+    // IS_DISTINCT is bool type.
+    SBDGroupChannel::CreateChannel(INVITEE_IDS, NAME, IS_DISTINCT, COVER_IMAGE_URL, DATA, CUSTOM_TYPE, handler);
 }
 ```
 
-* `NAME` : the name of the channel, or the Channel Topic.
-* `COVER_IMAGE_URL` : the URL of the cover image, which you can fetch to render into the UI.
-* `DATA` : a `wstring` field to store structured information, such as a JSON String.
-* `CUSTOM_TYPE` : a `wstring` field that allows you to subclassify your channel.
+* `NAME`: the name of the channel, or the channel topic.
+* `COVER_IMAGE_URL`: the URL of the cover image, which you can fetch to render into the UI.
+* `DATA`: a `wstring` field to store structured information, such as a `JSON` String.
+* `CUSTOM_TYPE`: a `wstring` field that allows you to subclassify your channel.
 
-> See the [Advanced](#group_channel_advanced) section for more information on cover images and Custom Types.
+> See the [Advanced](#group-channel-advanced) section for more information on cover images and custom types.
 
-You can also create channels via the SendBird [Platform API](/platform).
+You can also create a group channel via SendBird [Chat Platform API](https://sendbird.com/docs/chat/v3/platform-api/guides/group-channel#2-create-a-channel).
 You should utilize the Platform API when you wish to control channel creations and member invitations on the server-side.
 
 ### Getting a Group Channel instance with a URL
