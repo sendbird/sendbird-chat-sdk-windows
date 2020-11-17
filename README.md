@@ -1498,206 +1498,238 @@ void CreateGroupChannel() {
 You can also create a group channel via SendBird [Chat Platform API](https://sendbird.com/docs/chat/v3/platform-api/guides/group-channel#2-create-a-channel).
 You should utilize the Platform API when you wish to control channel creations and member invitations on the server-side.
 
-### Getting a Group Channel instance with a URL
+### Channel cover images
 
-Since a **channel URL** is a unique identifier of a Group Channel, you can use a URL to retrieve a channel instance.
-
-Store channel URLs to handle lifecycle or state changes in your app. For example, if a user disconnects from SendBird by temporarily switching to another app, you can provide a smooth restoration of the user's state using a stored URL to fetch the appropriate channel instance, then re-entering the user into the channel.
+When creating a channel, you can add a cover image by specifying an image URL.
 
 ```cpp
-class SendBirdGetGroupChannelHandler : public SBDGetGroupChannelInterface {
+#include <SendBird.h>
+
+class SendBirdCreateGroupChannelHandler : public SBDCreateGroupChannelInterface {
 public:
-  SendBirdGetGroupChannelHandler() {
-
-  }
-
-  ~SendBirdGetGroupChannelHandler() {
-
-  }
-
-  void CompletionHandler(SBDGroupChannel *channel, SBDError *error) {
-    if (error != NULL) {
-      // Error Handlling.
-
-      // Deallocate error.
-      delete error;
-
-      return;
+    SendBirdCreateGroupChannelHandler() {
+    
     }
-  }
+    
+    ~SendBirdCreateGroupChannelHandler() {
+    
+    }
+    
+    void CompletionHandler(SBDGroupChannel *channel, SBDError *error) {
+        if (error != NULL) {
+            // Error Handlling.
+            // Deallocate error.
+            delete error;
+            return;
+        }
+        
+        // The group channel is created.
+        // Do not deallocate `channel` pointer.
+    }
 };
 
 void CreateGroupChannel() {
-  SendBirdGetGroupChannelHandler *handler = new SendBirdGetGroupChannelHandler(); // `handler` has to be deallocated later.
-  SBDGroupChannel::GetChannel(CHANNEL_URL, handler);
+    SendBirdCreateGroupChannelHandler *handler = new SendBirdCreateGroupChannelHandler(); // `handler` has to be deallocated later.
+    SBDGroupChannel::CreateChannel(vector<wstring>(), NAME, IS_DISTINCT, COVER_URL, SBD_NULL_WSTRING, SBD_NULL_WSTRING, handler);
 }
 ```
 
-### Inviting users to an existing channel
-Only members of the channel are able to invite new users into the channel.
+Use `cover_url` to get the cover image URL. You can also update a channel's cover image by calling the `UpdateChannel()`method.
 
-You can choose whether the newly invited user is able to access past messages in the channel. In your **Dashboard Settings - Messages** section, there is an option to **show channel history**. If this option is enabled, new users will be able to view all messages sent before they have joined the channel. If not, new users will only be able to see messages sent after they had been invited.
+### Invite users to an existing channel
+
+Only the members of the channel are able to invite new members into the channel.
+
+You can choose whether a newly invited user is able to access past messages in the channel. In your **Dashboard Settings** > **Chat** > **Messages** menu, there is the **Chat history** option which you can turn on to show chat history to the new members. If this option is turned on, new members will be able to view all messages that are sent in the channel once they join the channel. If this option is not turned on, new users will only be able to view messages that are sent after they joined.
 
 > **Show channel history** is enabled by default
 
 ```cpp
 class SendBirdInviteUsersHandler : public SBDInviteUsersInterface {
 public:
-  SendBirdInviteUsersHandler() {
-
-  }
-
-  ~SendBirdInviteUsersHandler() {
-
-  }
-
-  void CompletionHandler(SBDError *error) {
-    if (error != NULL) {
-      // Error Handlling.
-
-      // Deallocate error.
-      delete error;
-
-      return;
+    SendBirdInviteUsersHandler() {
+    
     }
-  }
+    
+    ~SendBirdInviteUsersHandler() {
+    
+    }
+    
+    void CompletionHandler(SBDError *error) {
+        if (error != NULL) {
+            // Error Handlling.
+            // Deallocate error.
+            delete error;
+            return;
+        }
+    }
 };
 
 void InviteUsers() {
-  vector<SBDUser> invitees;
-
-  invitees.push_back(user_a);
-  invitees.push_back(user_b);
-
-  SendBirdInviteUsersHandler *handler = new SendBirdInviteUsersHandler(); // `handler` has to be deallocated later.
-  group_channel->InviteUsers(invitees, handler);
+    vector<SBDUser> invitees;
+    
+    invitees.push_back(user_a);
+    invitees.push_back(user_b);
+    
+    SendBirdInviteUsersHandler *handler = new SendBirdInviteUsersHandler(); // `handler` has to be deallocated later.
+    group_channel->InviteUsers(invitees, handler);
 }
 ```
 
-### Leaving a Group Channel
+### Leave a group channel
+
 Users will no longer receive messages from channels they have left.
 
 ```cpp
 class SendBirdLeaveGroupChannelHandler : public SBDLeaveGroupChannelInterface {
 public:
-  SendBirdLeaveGroupChannelHandler() {
-
-  }
-
-  ~SendBirdLeaveGroupChannelHandler() {
-
-  }
-
-  void CompletionHandler(SBDError *error) {
-    if (error != NULL) {
-      // Error Handlling.
-
-      // Deallocate error.
-      delete error;
-
-      return;
+    SendBirdLeaveGroupChannelHandler() {
+    
     }
-  }
+    
+    ~SendBirdLeaveGroupChannelHandler() {
+    
+    }
+    
+    void CompletionHandler(SBDError *error) {
+        if (error != NULL) {
+            // Error Handlling.
+            // Deallocate error.
+            delete error;
+            return;
+        }
+    }
 };
 
 void LeaveGroupChannel() {
-  SendBirdLeaveGroupChannelHandler *handler = new SendBirdLeaveGroupChannelHandler(); // `handler` has to be deallocated later.
-  group_channel->LeaveChannel();
+    SendBirdLeaveGroupChannelHandler *handler = new SendBirdLeaveGroupChannelHandler(); // `handler` has to be deallocated later.
+    group_channel->LeaveChannel();
 }
 ```
+
 
 ### Getting a list of my Group Channels
-You can obtain a list of Group Channels by creating a query with `CreateMyGroupChannelListQuery()` of `SBDGroupChannel`.
-`LoadNextPage` returns a list of `SBDGroupChannel` objects.
 
-> You can also set an option to include empty channels with `include_empty_channel`. **Empty channels** are channels that have been created but contain no sent messages. By default, empty channels are not shown.
+Use the `CreateMyGroupChannelListQuery()` and `SBDGroupChannel.LoadNextPage()` to return a list of `SBDGroupChannel` objects to obtain a list of group channels. 
+
+You can also set an option to include **empty channels** with the `include_empty_channel`. Empty channels are channels that have been created but contain no sent messages. By default, empty channels are not shown.
 
 ```cpp
 SBDGroupChannelListQuery *query;
 
 class SendBirdMyGroupChannelListQueryHandler : public SBDLoadNextGroupChannelListInterface {
 public:
-  SendBirdMyGroupChannelListQueryHandler() {
-
-  }
-
-  ~SendBirdMyGroupChannelListQueryHandler() {
-
-  }
-
-  void CompletionHandler(vector<SBDGroupChannel *> channels, SBDError *error) {
-    if (error != NULL) {
-      // Error Handlling.
-
-      // Deallocate error.
-      delete error;
-
-      return;
+    SendBirdMyGroupChannelListQueryHandler() {
+    
     }
-
-    // Do not deallocate the channel items in channels vector.
-  }
+    
+    ~SendBirdMyGroupChannelListQueryHandler() {
+    
+    }
+    
+    void CompletionHandler(vector<SBDGroupChannel *> channels, SBDError *error) {
+        if (error != NULL) {
+            // Error Handlling.
+            // Deallocate error.
+            delete error;
+            return;
+        }
+        
+        // Do not deallocate the channel items in channels vector.
+    }
 }
 
 void InitQueryInstance() {
-  query = SBDGroupChannel::CreateMyGroupChannelListQuery();
-  query->limit = 30;
-  query->include_empty_channel = true;
+    query = SBDGroupChannel::CreateMyGroupChannelListQuery();
+    query->limit = 30;
+    query->include_empty_channel = true;
 }
 
 void GetMyGroupChannels() {
-  SendBirdMyGroupChannelListQueryHandler *handler = new SendBirdMyGroupChannelListQueryHandler(); // `handler` has to be deallocated later.
-  query->LoadNextPage(handler);
+    SendBirdMyGroupChannelListQueryHandler *handler = new SendBirdMyGroupChannelListQueryHandler(); // `handler` has to be deallocated later.
+    query->LoadNextPage(handler);
 }
 ```
 
-### Querying Group Channels by User IDs
+### Get a group channel instance with a URL
 
-It is possible to filter a channel search by user IDs. This can be done by calling `sSetUsersExactFilter()` or `SetUsersIncludeFilter()` of `SBDGroupChannelListQuery`.
+Since a **channel URL** is a unique identifier of a group channel, you can use a URL to retrieve a channel instance.
 
-Given an example where a user (with the ID "User") is part of two Group Channels:
-* channelA: { "User", "John", "Jay" }
-* channelB: { "User", "John", "Jay", "Jin" }
+Store channel URLs to handle lifecycle or state changes in your app. For example, when a user disconnects from Sendbird server by temporarily switching to another app, the stored URL can be used to fetch the appropriate channel instance to provide a smooth restoration of the user’s state. The stored URL can also be used to re-enter the user into the channel.  
 
-An **ExactFilter** returns the list of channels containing exactly the queried userIDs
+```cpp
+class SendBirdGetGroupChannelHandler : public SBDGetGroupChannelInterface {
+public:
+    SendBirdGetGroupChannelHandler() {
+    
+    }
+    
+    ~SendBirdGetGroupChannelHandler() {
+    
+    }
+    
+    void CompletionHandler(SBDGroupChannel *channel, SBDError *error) {
+        if (error != NULL) {
+            // Error Handlling.
+            // Deallocate error.
+            delete error;
+            return;
+        }
+    }
+};
+
+void CreateGroupChannel() {
+    SendBirdGetGroupChannelHandler *handler = new SendBirdGetGroupChannelHandler(); // `handler` has to be deallocated later.
+    SBDGroupChannel::GetChannel(CHANNEL_URL, handler);
+}
+```
+
+### Query group channels by user ID
+
+It is possible to filter a channel search by user IDs. This can be done by calling the `SetUsersExactFilter()` or `SetUsersIncludeFilter()` of `SBDGroupChannelListQuery`.
+
+Given an example where a user (with the ID "User") is part of two group channels:
+
+- channelA: { "User", "John", "Jay" }
+- channelB: { "User", "John", "Jay", "Jin" }
+
+An **ExactFilter** returns the list of channels containing exactly the queried user IDs.
 
 ```cpp
 SBDGroupChannelListQuery *query;
 
 class SendBirdMyGroupChannelListQueryHandler : public SBDLoadNextGroupChannelListInterface {
 public:
-  SendBirdMyGroupChannelListQueryHandler() {
-
-  }
-
-  ~SendBirdMyGroupChannelListQueryHandler() {
-
-  }
-
-  void CompletionHandler(vector<SBDGroupChannel *> channels, SBDError *error) {
-    if (error != NULL) {
-      // Error Handlling.
-
-      // Deallocate error.
-      delete error;
-
-      return;
+    SendBirdMyGroupChannelListQueryHandler() {
+    
     }
-
-    // Do not deallocate the channel items in channels vector.
-  }
+    
+    ~SendBirdMyGroupChannelListQueryHandler() {
+    
+    }
+    
+    void CompletionHandler(vector<SBDGroupChannel *> channels, SBDError *error) {
+        if (error != NULL) {
+            // Error Handlling.
+            // Deallocate error.
+            delete error;
+            return;
+        }
+        
+        // Do not deallocate the channel items in channels vector.
+    }
 }
 
 void InitQueryInstance() {
-  query = SBDGroupChannel::CreateMyGroupChannelListQuery();
-  query->limit = 30;
-
-  query->SetUsersExactFilter(USERS);
+    query = SBDGroupChannel::CreateMyGroupChannelListQuery();
+    query->limit = 30;
+    
+    query->SetUsersExactFilter(USERS);
 }
 
 void GetMyGroupChannels() {
-  SendBirdMyGroupChannelListQueryHandler *handler = new SendBirdMyGroupChannelListQueryHandler(); // `handler` has to be deallocated later.
-  query->LoadNextPage(handler);
+    SendBirdMyGroupChannelListQueryHandler *handler = new SendBirdMyGroupChannelListQueryHandler(); // `handler` has to be deallocated later.
+    query->LoadNextPage(handler);
 }
 ```
 
@@ -1708,163 +1740,155 @@ SBDGroupChannelListQuery *query;
 
 class SendBirdMyGroupChannelListQueryHandler : public SBDLoadNextGroupChannelListInterface {
 public:
-  SendBirdMyGroupChannelListQueryHandler() {
-
-  }
-
-  ~SendBirdMyGroupChannelListQueryHandler() {
-
-  }
-
-  void CompletionHandler(vector<SBDGroupChannel *> channels, SBDError *error) {
-    if (error != NULL) {
-      // Error Handlling.
-
-      // Deallocate error.
-      delete error;
-
-      return;
+    SendBirdMyGroupChannelListQueryHandler() {
+    
     }
-
-    // Do not deallocate the channel items in channels vector.
-  }
+    
+    ~SendBirdMyGroupChannelListQueryHandler() {
+    
+    }
+    
+    void CompletionHandler(vector<SBDGroupChannel *> channels, SBDError *error) {
+        if (error != NULL) {
+            // Error Handlling.
+            // Deallocate error.
+            delete error;
+            return;
+        }
+        
+        // Do not deallocate the channel items in channels vector.
+    }
 }
 
 void InitQueryInstance() {
-  query = SBDGroupChannel::CreateMyGroupChannelListQuery();
-  query->limit = 30;
-
-  query->SetUsersIncludeFilter(USERS, SBDGroupChannelListQueryTypeAnd);
+    query = SBDGroupChannel::CreateMyGroupChannelListQuery();
+    query->limit = 30;
+    
+    query->SetUsersIncludeFilter(USERS, SBDGroupChannelListQueryTypeAnd);
 }
 
 void GetMyGroupChannels() {
-  SendBirdMyGroupChannelListQueryHandler *handler = new SendBirdMyGroupChannelListQueryHandler(); // `handler` has to be deallocated later.
-  query->LoadNextPage(handler);
+    SendBirdMyGroupChannelListQueryHandler *handler = new SendBirdMyGroupChannelListQueryHandler(); // `handler` has to be deallocated later.
+    query->LoadNextPage(handler);
 }
 ```
 
-
-### Sending messages
+### Send a message
 Upon entering a channel, a user will be able to send messages of the following types:
-* **UserMessage** : a User text message.
-* **FileMessage** : a User binary message.
 
-You can additionally specify a `CUSTOM_TYPE` to further subclassify a message.
+- **UserMessage**: A text message sent by a user
+- **FileMessage**: A binary message sent by a user
 
-When you send a text message, you can additionally attach arbitrary strings via a `DATA` field. You can utilize this field to send structured data such as font sizes, font types, or custom JSON objects.
+Furthermore, you can specify a `CUSTOM_TYPE` to subclassify a message.
 
-Delivery failures (e.g., due to network issues) will return an exception. By implementing the virtual method, `CompletionHandler()`, it is possible to display only the messages that are successfully sent.
+When you send a text message, you can additionally attach arbitrary strings via a `DATA` field. You can utilize this field to send structured data such as font sizes, font types, or custom `JSON` objects.
+
+Delivery failures caused by network issues or other reasons will return an exception. By implementing the virtual method, `CompletionHandler()`, it is possible to display only the messages that are successfully sent.
 
 ```cpp
 #include <SendBird.h>
 
 class SendBirdSendUserMessageHandler : public SBDSendUserMessageInterface {
 public:
-  SendBirdSendUserMessageHandler() {
-  }
-
-  ~SendBirdSendUserMessageHandler() {
-  }
-
-  void CompletionHandler(SBDUserMessage *user_message, SBDError *error) {
-    if (error != NULL) {
-      // Error Handlling.
-
-      // Deallocate error.
-      delete error;
-
-      return;
+    SendBirdSendUserMessageHandler() {
     }
-
-    // Handle `user_message`.
-  }
+    
+    ~SendBirdSendUserMessageHandler() {
+    }
+    
+    void CompletionHandler(SBDUserMessage *user_message, SBDError *error) {
+        if (error != NULL) {
+            // Error Handlling.
+            // Deallocate error.
+            delete error;
+            return;
+        }
+        
+        // Handle `user_message`.
+    }
 };
 
 
 void SendUserMessage() {
-  SendBirdSendUserMessageHandler *handler = new SendBirdSendUserMessageHandler(); // `handler` has to be deallocated later.
-
-  // `SendUserMessage()` belongs to `SBDBaseChannel` class, so it can be used by `SBDOpenChannel` and `SBDGroupChannel` instance.
-  // TARGET_LANGUAGES is vector<wstring> type. If you don't have to set it, set vector<wstring>().
-  channel->SendUserMessage(MESSAGE_TEXT, DATA, CUSTOM_TYPE, TARGET_LANGUAGES, handler);
+    SendBirdSendUserMessageHandler *handler = new SendBirdSendUserMessageHandler(); // `handler` has to be deallocated later.
+    
+    // `SendUserMessage()` belongs to `SBDBaseChannel` class, so it can be used by `SBDOpenChannel` and `SBDGroupChannel` instance.
+    // TARGET_LANGUAGES is vector<wstring> type. If you don't have to set it, set vector<wstring>().
+    channel->SendUserMessage(MESSAGE_TEXT, DATA, CUSTOM_TYPE, TARGET_LANGUAGES, handler);
 }
 ```
 
-A user can also send any binary file through SendBird. There are two ways in which you can send a binary file: by sending a **URL**.
+A user can also send any binary file through the Chat SDK. There are two ways in which a user can send a binary file: by sending the file itself, or sending a URL.
 
-By sending a raw file, you can choose to send a file hosted in your own servers by passing in a URL that points to the file. In this case, your file will not be hosted in the SendBird servers, and downloads of the file will occur through your own servers instead.
-
+By sending a raw file, a user can choose to send a file hosted in the user’s own server by passing in a URL that points to the file. In this case, the file will not be hosted in Sendbird server, and downloads of the file will occur through the user’s own server instead.
 
 ```cpp
 #include <SendBird.h>
 
 class SendBirdSendFileMessageHandler : public SBDSendFileMessageInterface {
 public:
-  SendBirdSendFileMessageHandler() {
-
-  }
-
-  ~SendBirdSendFileMessageHandler() {
-
-  }
-
-  void CompletionHandler(SBDFileMessage *file_message, SBDError *error) {
-    if (error != NULL) {
-      // Error Handlling.
-
-      // Deallocate error.
-      delete error;
-
-      return;
+    SendBirdSendFileMessageHandler() {
+    
     }
-
-    // Handle `file_message`.
-  }
+    
+    ~SendBirdSendFileMessageHandler() {
+    
+    }
+    
+    void CompletionHandler(SBDFileMessage *file_message, SBDError *error) {
+        if (error != NULL) {
+            // Error Handlling.
+            // Deallocate error.
+            delete error;
+            return;
+        }
+        
+        // Handle `file_message`.
+    }
 };
 
 void SendFileMessage() {
-  SendBirdSendFileMessageHandler *handler = new SendBirdSendFileMessageHandler(); // `handler` has to be deallocated later.
-  channel->SendFileMessage(FILE_URL, FILE_NAME, FILE_SIZE, FILE_TYPE, CUSTOM_DATA, CUSTOM_TYPE, handler);
+    SendBirdSendFileMessageHandler *handler = new SendBirdSendFileMessageHandler(); // `handler` has to be deallocated later.
+    channel->SendFileMessage(FILE_URL, FILE_NAME, FILE_SIZE, FILE_TYPE, CUSTOM_DATA, CUSTOM_TYPE, handler);
 }
 ```
 
-### Receiving messages
-Messages can be received by adding a **[SBDChannelInterface](#event_handler)**.
-A received `SBDBaseMessage` object can be of one of three different types of messages.
+### Receive messages
 
-* **SBDUserMessage** : a User text message.
-* **SBDFileMessage** : a User binary message.
-* [SBDAdminMessage](#open_channel_3_admin_messages) : an Admin message which can be sent by an admin through the Platform API.
+Add `SBDChannelInterface` to receive messages. A received `SBDBaseMessage` object takes one of the three following message types:
+
+- **SBDUserMessage**: A text message sent by a user
+- **SBDFileMessage**: A binary file message sent by a user 
+- [SBDAdminMessage](#open-channel-3-admin-messages): A text message sent by an admin through the [Chat Platform API](https://sendbird.com/docs/chat/v3/platform-api/guides/messages#2-send-a-message)
 
 `UNIQUE_HANDLER_ID` is a unique identifier to register multiple concurrent handlers.
-
 
 ```cpp
 #include <SendBird.h>
 
 class SendBirdChannelEventHandler : public SBDChannelInterface {
 public:
-  // ...
-
-  void MessageReceived(SBDBaseChannel *channel, SBDBaseMessage *message) {
-
-  }
-
-  // ...
+    // ...
+    
+    void MessageReceived(SBDBaseChannel *channel, SBDBaseMessage *message) {
+    
+    }
+    
+    // ...
 };
 
 void InitChannelEventHandler() {
-  SBDMain::AddChannelHandler(new SendBirdChannelEventHandler(), UNIQUE_HANDLER_ID);
+    SBDMain::AddChannelHandler(new SendBirdChannelEventHandler(), UNIQUE_HANDLER_ID);
 }
 ```
 
-You should remove the channel delegate where the UI is no longer valid.
+The channel handler where the UI is no longer valid should be removed. 
 
 ```cpp
 #include <SendBird.h>
 
 void RemoveChannelHandler() {
-  SBDMain::RemoveChannelHandler(UNIQUE_HANDLER_ID);
+    SBDMain::RemoveChannelHandler(UNIQUE_HANDLER_ID);
 }
 ```
 
@@ -2205,46 +2229,6 @@ To do so using the Dashboard, navigate to the **Group Channels** tab. Inside the
 > If you are currently developing under the **Free Plan** and therefore cannot access the **Moderation Tools** from the Dashboard, you must send Admin messages through the Platform API.
 
 
-### Channel cover images
-
-When creating a channel, you can add a cover image by specifying an image URL.
-
-```cpp
-#include <SendBird.h>
-
-class SendBirdCreateGroupChannelHandler : public SBDCreateGroupChannelInterface {
-public:
-  SendBirdCreateGroupChannelHandler() {
-
-  }
-
-  ~SendBirdCreateGroupChannelHandler() {
-
-  }
-
-  void CompletionHandler(SBDGroupChannel *channel, SBDError *error) {
-    if (error != NULL) {
-      // Error Handlling.
-
-      // Deallocate error.
-      delete error;
-
-      return;
-    }
-    
-    // The group channel is created.
-    // Do not deallocate `channel` pointer.
-  }
-};
-
-void CreateGroupChannel() {
-  SendBirdCreateGroupChannelHandler *handler = new SendBirdCreateGroupChannelHandler(); // `handler` has to be deallocated later.
-
-  SBDGroupChannel::CreateChannel(vector<wstring>(), NAME, IS_DISTINCT, COVER_URL, SBD_NULL_WSTRING, SBD_NULL_WSTRING, handler);
-}
-```
-
-You can get the cover image URL referencing `cover_url`. You can also update a channel's cover image by calling `UpdateChannel()`.
 
 ### Custom channel types
 
