@@ -168,7 +168,7 @@ From **Settings** > **Application** > **Security** > **Access token permission**
 
 ### Step 3: Create a new open channel
 
-Create an [open channel](). Once created, all users in your Sendbird application can easily participate in the channel. Similarly, you can create a [group channel]() by inviting users as new members to the channel.
+Create an [open channel](#open-channel-1). Once created, all users in your Sendbird application can easily participate in the channel. Similarly, you can create a [group channel](#group-channel-1) by inviting users as new members to the channel.
 
 ```cpp
 #include <SendBird.h>
@@ -810,9 +810,9 @@ void SendFileMessage() {
 
 Add [`SBDChannelInterface`](#event-handler) to receive messages. A received `SBDBaseMessage` object takes one of the three following message types:
 
-* **SBDUserMessage** : a User text message.
-* **SBDFileMessage** : a User binary message.
-* **SBDAdminMessage** : an Admin message which can be sent by an admin through the Platform API.
+* **SBDUserMessage**: a User text message.
+* **SBDFileMessage**: a User binary message.
+* **SBDAdminMessage**: an Admin message which can be sent by an admin through the Platform API.
 
 `UNIQUE_HANDLER_ID` is a unique identifier that registers multiple concurrent handlers.
 
