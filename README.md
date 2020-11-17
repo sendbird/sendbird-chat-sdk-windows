@@ -11,6 +11,8 @@
   1. [Before getting started](#before-getting-started)
   1. [Getting started](#getting-started)
   1. [Send your first message](#send-your-first-message)
+  1. [Authentication](#authentication)
+  1. [Channel types](#channel-types)
   
 <br />
 
@@ -1161,7 +1163,7 @@ void GetBannedUsers() {
 
 <br />
 
-## Open Channel - Advanced
+## Open channel: Advanced
 
 ### Admin messages
 
