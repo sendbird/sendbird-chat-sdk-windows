@@ -1391,7 +1391,7 @@ When sending an image file, you can create a thumbnail of the image, which you c
 
 Supported file types are files whose MIME type is `image/*` or `video/*`.
 
-The SDK does not support creating thumbnails when [sending a file message via a file URL](#open-channel-3-send-a-message).
+The SDK does not support creating thumbnails when [sending a file message via a file URL](#send-a-message).
 
 Steps to create a thumbnail:
 
@@ -1853,7 +1853,7 @@ void GetMyGroupChannels() {
 
 ### Send a message
 
-Upon entering a channel, a user will be able to send messages of the following types:
+Upon joining a channel, a user will be able to send messages of the following types:
 
 - **UserMessage**: A text message sent by a user
 - **FileMessage**: A binary message sent by a user
@@ -2313,7 +2313,7 @@ When sending an image file, you can create a thumbnail of the image, which you c
 
 Supported file types are files whose **MIME type** is `image/*` or `video/*`.
 
-> The SDK does not support creating thumbnails when [sending a File Message via a file URL](#group-channel-3-send-a-message).
+> The SDK does not support creating thumbnails when [sending a File Message via a file URL](#send-a-message-1).
 
 Steps to create a thumbnail:
 
