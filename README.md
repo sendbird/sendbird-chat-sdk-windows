@@ -577,7 +577,7 @@ You can get the cover image URL using `cover_url`. You can also update a channel
 
 ### Enter an open channel
 
-A A user must enter an open channel to receive messages. A user can enter up to 10 open channels at once.
+A user must enter an open channel to receive messages. A user can enter up to 10 open channels at once.
 
 Entered open channels are valid only within the current connection. If a user disconnects from or reconnects to Sendbird server, the user must re-enter channels in order to continue receiving messages from the previously entered open channels.
 
@@ -720,7 +720,7 @@ void GetOpenChannel() {
 }
 ```
 
-### Sending a message
+### Send a message
 
 Upon entering a channel, a user will be able to send messages of the following types:
 * **UserMessage** : a User text message.
