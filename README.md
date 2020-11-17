@@ -109,7 +109,7 @@ public:
     
     void CompletionHandler(SBDUser user, SBDError *error) {
         if (error != NULL) {
-            // Error Handlling.
+            // Error handling.
             
             // Deallocate error.
             delete error;
@@ -144,7 +144,7 @@ public:
     
     void CompletionHandler(SBDUser user, SBDError *error) {
         if (error != NULL) {
-            // Error Handlling.
+            // Error handling.
             
             // Deallocate error.
             delete error;
@@ -183,7 +183,7 @@ public:
     
     void CompletionHandler(SBDOpenChannel *channel, SBDError *error) {
         if (error != NULL) {
-            // Error Handlling.
+            // Error handling.
             // Deallocate error.
             delete error;
             return;
@@ -222,7 +222,7 @@ public:
     
     void CompletionHandler(SBDError *error) {
         if (error != NULL) {
-            // Error Handlling.
+            // Error handling.
             // Deallocate error.
             delete error;
             return;
@@ -253,7 +253,7 @@ public:
     
     void CompletionHandler(SBDUserMessage *user_message, SBDError *error) {
         if (error != NULL) {
-            // Error Handlling.
+            // Error handling.
             // Deallocate error.
             delete error;
             return;
@@ -307,7 +307,7 @@ public:
     
     void CompletionHandler(SBDUser user, SBDError *error) {
         if (error != NULL) {
-            // Error Handlling.
+            // Error handling.
             // Deallocate error.
             delete error;
             return;
@@ -351,7 +351,7 @@ public:
     
     void CompletionHandler(SBDUser user, SBDError *error) {
         if (error != NULL) {
-            // Error Handlling.
+            // Error handling.
             // Deallocate error.
             delete error;
             return;
@@ -416,7 +416,7 @@ public:
     
     void CompletionHandler(SBDError *error) {
         if (error != NULL) {
-            // Error Handlling.
+            // Error handling.
             // Deallocate error.
             delete error;
             return;
@@ -447,7 +447,7 @@ public:
     
     void CompletionHandler(SBDError *error) {
         if (error != NULL) {
-            // Error Handlling.
+            // Error handling.
             // Deallocate error.
             delete error;
             return;
@@ -525,7 +525,7 @@ public:
     
     void CompletionHandler(SBDOpenChannel *channel, SBDError *error) {
         if (error != NULL) {
-            // Error Handlling.
+            // Error handling.
             // Deallocate error.
             delete error;
             return;
@@ -562,7 +562,7 @@ public:
     
     void CompletionHandler(SBDOpenChannel *channel, SBDError *error) {
         if (error != NULL) {
-            // Error Handlling.
+            // Error handling.
             // Deallocate error.
             delete error;
             return;
@@ -600,7 +600,7 @@ public:
     
     void CompletionHandler(SBDError *error) {
         if (error != NULL) {
-            // Error Handlling.
+            // Error handling.
             // Deallocate error.
             delete error;
             return;
@@ -631,7 +631,7 @@ public:
     }
     
     void CompletionHandler(SBDError *error) {
-        // Error Handlling.
+        // Error handling.
         // Deallocate error.
         delete error;
         return;
@@ -665,7 +665,7 @@ public:
     
     void CompletionHandler(vector<SBDOpenChannel *> channels, SBDError *error) {
         if (error != NULL) {
-            // Error Handlling.
+            // Error handling.
             // Deallocate error.
             delete error;
             return;
@@ -710,7 +710,7 @@ public:
     
     void CompletionHandler(SBDOpenChannel *channel, SBDError *error) {
         if (error != NULL) {
-            // Error Handlling.
+            // Error handling.
             // Deallocate error.
             delete error;
             return;
@@ -751,7 +751,7 @@ public:
     
     void CompletionHandler(SBDUserMessage *user_message, SBDError *error) {
         if (error != NULL) {
-            // Error Handlling.
+            // Error handling.
             // Deallocate error.
             delete error;
             return;
@@ -790,7 +790,7 @@ public:
     
     void CompletionHandler(SBDFileMessage *file_message, SBDError *error) {
         if (error != NULL) {
-            // Error Handlling.
+            // Error handling.
             // Deallocate error.
             delete error;
             return;
@@ -867,7 +867,7 @@ public:
     
     void CompletionHandler(vector<SBDBaseMessage *> messages, SBDError *error) {
         if (error != NULL) {
-            // Error Handlling.
+            // Error handling.
             // Deallocate error.
             delete error;
             return;
@@ -912,7 +912,7 @@ public:
     
     void CompletionHandler(vector<SBDBaseMessage *> messages, SBDError *error) {
         if (error != NULL) {
-            // Error Handlling.
+            // Error handling.
             // Deallocate error.
             delete error;
             return;
@@ -955,7 +955,7 @@ public:
     
     void CompletionHandler(SBDError *error) {
         if (error != NULL) {
-            // Error Handlling.
+            // Error handling.
             // Deallocate error.
             delete error;
             return;
@@ -1009,7 +1009,7 @@ public:
     
     void CompletionHandler(vector<SBDUser> users, SBDError *error) {
         if (error != NULL) {
-            // Error Handlling.
+            // Error handling.
             // Deallocate error.
             delete error;
             return;
@@ -1064,7 +1064,7 @@ public:
     
     void CompletionHandler(vector<SBDUser> users, SBDError *error) {
         if (error != NULL) {
-            // Error Handlling.
+            // Error handling.
             // Deallocate error.
             delete error;
             return;
@@ -1100,7 +1100,7 @@ public:
     
     void CompletionHandler(vector<SBDUser> users, SBDError *error) {
         if (error != NULL) {
-            // Error Handlling.
+            // Error handling.
             // Deallocate error.
             delete error;
             return;
@@ -1150,7 +1150,7 @@ public:
     
     void CompletionHandler(SBDOpenChannel *channel, SBDError *error) {
         if (error != NULL) {
-            // Error Handlling.
+            // Error handling.
             // Deallocate error.
             delete error;
             return;
@@ -1190,7 +1190,7 @@ public:
     
     void CompletionHandler(SBDUserMessage *user_message, SBDError *error) {
         if (error != NULL) {
-            // Error Handlling.
+            // Error handling.
             // Deallocate error.
             delete error;
             return;
@@ -1229,7 +1229,7 @@ public:
     
     void CompletionHandler(SBDUserMessage *user_message, SBDError *error) {
         if (error != NULL) {
-            // Error Handlling.
+            // Error handling.
             // Deallocate error.
             delete error;
             return;
@@ -1324,7 +1324,7 @@ public:
     
     void CompletionHandler(vector<SBDOpenChannel *> channels, SBDError *error) {
         if (error != NULL) {
-            // Error Handlling.
+            // Error handling.
             // Deallocate error.
             delete error;
             return;
@@ -1366,7 +1366,7 @@ public:
     
     void CompletionHandler(vector<SBDOpenChannel *> channels, SBDError *error) {
         if (error != NULL) {
-            // Error Handlling.
+            // Error handling.
             // Deallocate error.
             delete error;
             return;
@@ -1420,7 +1420,7 @@ public:
     
     void CompletionHandler(SBDFileMessage *file_message, SBDError *error) {
         if (error != NULL) {
-            // Error Handlling.
+            // Error handling.
             // Deallocate error.
             delete error;
             return;
@@ -1473,7 +1473,7 @@ public:
     
     void CompletionHandler(SBDGroupChannel *channel, SBDError *error) {
         if (error != NULL) {
-            // Error Handlling.
+            // Error handling.
             // Deallocate error.
             delete error;
             return;
@@ -1524,7 +1524,7 @@ public:
     
     void CompletionHandler(SBDGroupChannel *channel, SBDError *error) {
         if (error != NULL) {
-            // Error Handlling.
+            // Error handling.
             // Deallocate error.
             delete error;
             return;
@@ -1556,7 +1556,7 @@ public:
     
     void CompletionHandler(SBDGroupChannel *channel, SBDError *error) {
         if (error != NULL) {
-            // Error Handlling.
+            // Error handling.
             // Deallocate error.
             delete error;
             return;
@@ -1601,7 +1601,7 @@ public:
     
     void CompletionHandler(SBDGroupChannel *channel, SBDError *error) {
         if (error != NULL) {
-            // Error Handlling.
+            // Error handling.
             // Deallocate error.
             delete error;
             return;
@@ -1641,7 +1641,7 @@ public:
     
     void CompletionHandler(SBDError *error) {
         if (error != NULL) {
-            // Error Handlling.
+            // Error handling.
             // Deallocate error.
             delete error;
             return;
@@ -1677,7 +1677,7 @@ public:
     
     void CompletionHandler(SBDError *error) {
         if (error != NULL) {
-            // Error Handlling.
+            // Error handling.
             // Deallocate error.
             delete error;
             return;
@@ -1713,7 +1713,7 @@ public:
     
     void CompletionHandler(vector<SBDGroupChannel *> channels, SBDError *error) {
         if (error != NULL) {
-            // Error Handlling.
+            // Error handling.
             // Deallocate error.
             delete error;
             return;
@@ -1754,7 +1754,7 @@ public:
     
     void CompletionHandler(SBDGroupChannel *channel, SBDError *error) {
         if (error != NULL) {
-            // Error Handlling.
+            // Error handling.
             // Deallocate error.
             delete error;
             return;
@@ -1794,7 +1794,7 @@ public:
     
     void CompletionHandler(vector<SBDGroupChannel *> channels, SBDError *error) {
         if (error != NULL) {
-            // Error Handlling.
+            // Error handling.
             // Deallocate error.
             delete error;
             return;
@@ -1834,7 +1834,7 @@ public:
     
     void CompletionHandler(vector<SBDGroupChannel *> channels, SBDError *error) {
         if (error != NULL) {
-            // Error Handlling.
+            // Error handling.
             // Deallocate error.
             delete error;
             return;
@@ -1883,7 +1883,7 @@ public:
     
     void CompletionHandler(SBDUserMessage *user_message, SBDError *error) {
         if (error != NULL) {
-            // Error Handlling.
+            // Error handling.
             // Deallocate error.
             delete error;
             return;
@@ -1922,7 +1922,7 @@ public:
     
     void CompletionHandler(SBDFileMessage *file_message, SBDError *error) {
         if (error != NULL) {
-            // Error Handlling.
+            // Error handling.
             // Deallocate error.
             delete error;
             return;
@@ -1997,7 +1997,7 @@ public:
     }
     
     void CompletionHandler(vector<SBDBaseMessage *> messages, SBDError *error) {
-        // Error Handlling.
+        // Error handling.
         // Deallocate error.
         delete error;
         return;
@@ -2043,7 +2043,7 @@ public:
     
     void CompletionHandler(vector<SBDBaseMessage *> messages, SBDError *error) {
         if (error != NULL) {
-            // Error Handlling.
+            // Error handling.
             // Deallocate error.
             delete error;
             return;
@@ -2086,7 +2086,7 @@ public:
     
     void CompletionHandler(SBDError *error) {
         if (error != NULL) {
-            // Error Handlling.
+            // Error handling.
             // Deallocate error.
             delete error;
             return;
@@ -2249,7 +2249,7 @@ public:
     
     void CompletionHandler(SBDGroupChannel *channel, SBDError *error) {
         if (error != NULL) {
-            // Error Handlling.
+            // Error handling.
             // Deallocate error.
             delete error;
             return;
@@ -2289,7 +2289,7 @@ public:
     
     void CompletionHandler(SBDUserMessage *user_message, SBDError *error) {
         if (error != NULL) {
-            // Error Handlling.
+            // Error handling.
             // Deallocate error.
             delete error;
             return;
@@ -2340,7 +2340,7 @@ public:
     
     void CompletionHandler(SBDFileMessage *file_message, SBDError *error) {
         if (error != NULL) {
-            // Error Handlling.
+            // Error handling.
             // Deallocate error.
             delete error;
             return;
@@ -2381,7 +2381,7 @@ public:
     
     void CompletionHandler(SBDUserMessage *user_message, SBDError *error) {
         if (error != NULL) {
-            // Error Handlling.
+            // Error handling.
             // Deallocate error.
             delete error;
             return;
@@ -2491,7 +2491,7 @@ public:
     
     void CompletionHandler(map<wstring, wstring> meta_data, SBDError *error) {
         if (error != NULL) {
-            // Error Handlling.
+            // Error handling.
             // Deallocate error.
             delete error;
             return;
@@ -2511,7 +2511,7 @@ public:
     
     void CompletionHandler(SBDOpenChannel *channel, SBDError *error) {
         if (error != NULL) {
-            // Error Handlling.
+            // Error handling.
             // Deallocate error.
             delete error;
             return;
@@ -2551,7 +2551,7 @@ public:
     
     void CompletionHandler(map<wstring, wstring> meta_data, SBDError *error) {
         if (error != NULL) {
-            // Error Handlling.
+            // Error handling.
             // Deallocate error.
             delete error;
             return;
@@ -2571,7 +2571,7 @@ public:
     
     void CompletionHandler(SBDOpenChannel *channel, SBDError *error) {
         if (error != NULL) {
-            // Error Handlling.
+            // Error handling.
             // Deallocate error.
             delete error;
             return;
@@ -2611,7 +2611,7 @@ public:
     
     void CompletionHandler(map<wstring, wstring> meta_data, SBDError *error) {
         if (error != NULL) {
-            // Error Handlling.
+            // Error handling.
             // Deallocate error.
             delete error;
             return;
@@ -2631,7 +2631,7 @@ public:
     
     void CompletionHandler(SBDOpenChannel *channel, SBDError *error) {
         if (error != NULL) {
-            // Error Handlling.
+            // Error handling.
             // Deallocate error.
             delete error;
             return;
@@ -2675,7 +2675,7 @@ public:
     
     void CompletionHandler(map<wstring, int64_t> meta_counters, SBDError *error) {
         if (error != NULL) {
-            // Error Handlling.
+            // Error handling.
             // Deallocate error.
             delete error;
             return;
@@ -2695,7 +2695,7 @@ public:
     
     void CompletionHandler(SBDOpenChannel *channel, SBDError *error) {
         if (error != NULL) {
-            // Error Handlling.
+            // Error handling.
             // Deallocate error.
             delete error;
             return;
@@ -2735,7 +2735,7 @@ public:
     
     void CompletionHandler(map<wstring, int64_t> meta_counters, SBDError *error) {
         if (error != NULL) {
-            // Error Handlling.
+            // Error handling.
             // Deallocate error.
             delete error;
             return;
@@ -2755,7 +2755,7 @@ public:
     
     void CompletionHandler(SBDOpenChannel *channel, SBDError *error) {
         if (error != NULL) {
-            // Error Handlling.
+            // Error handling.
             // Deallocate error.
             delete error;
             return;
@@ -2795,7 +2795,7 @@ public:
     
     void CompletionHandler(map<wstring, int64_t> meta_counters, SBDError *error) {
         if (error != NULL) {
-            // Error Handlling.
+            // Error handling.
             // Deallocate error.
             delete error;
             return;
@@ -2815,7 +2815,7 @@ public:
     
     void CompletionHandler(SBDOpenChannel *channel, SBDError *error) {
         if (error != NULL) {
-            // Error Handlling.
+            // Error handling.
             // Deallocate error.
             delete error;
             return;
@@ -2854,7 +2854,7 @@ public:
     
     void CompletionHandler(map<wstring, int64_t> meta_counters, SBDError *error) {
         if (error != NULL) {
-            // Error Handlling.
+            // Error handling.
             // Deallocate error.
             delete error;
             return;
@@ -2874,7 +2874,7 @@ public:
     
     void CompletionHandler(SBDOpenChannel *channel, SBDError *error) {
         if (error != NULL) {
-            // Error Handlling.
+            // Error handling.
             // Deallocate error.
             delete error;
             return;
