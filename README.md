@@ -110,10 +110,8 @@ public:
     void CompletionHandler(SBDUser user, SBDError *error) {
         if (error != NULL) {
             // Error handling.
-            
             // Deallocate error.
             delete error;
-            
             return;
         }
         
@@ -145,10 +143,8 @@ public:
     void CompletionHandler(SBDUser user, SBDError *error) {
         if (error != NULL) {
             // Error handling.
-            
             // Deallocate error.
             delete error;
-            
             return;
         }
         
@@ -292,7 +288,7 @@ Connect a user to Sendbird server by using a unique user ID or with a user ID an
 
 This simple authentication procedure might be useful when you are in development or if your service does not require additional security.
 
-Find out more about Sendbird's usage of Handlers and callbacks in the [Event handler](#event_handler) section.
+Find out more about Sendbird's usage of Handlers and callbacks in the [Event handler](#event-handler) section.
 
 ```cpp
 #include <SendBird.h>
