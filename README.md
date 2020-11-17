@@ -471,11 +471,9 @@ An **open channel** is a Twitch-style public chat. In this channel type, anyone 
 
 A **group channel** is a private chat. A user may join the chat only through an invitation by another user who is already a member of the chat.
 
->* **Distinct property**: The **distinct** property allows a channel to be reused for the same members of a group chat. The **distinct** property automatically gets set to false when a new member is invited, or when a member leaves the channel. 
-
->* **1-on-1 messaging**: 1-on-1 messaging is a Twitter’s direct message style  private channel between two users. A distinct property enabled channel can be reused for the same members.
-
->* **Group messaging**: Group messaging is a WhatsApp-style closed group private channel among multiple users. Up to a few hundred members can be invited to a group channel. 
+- **Distinct property**: The **distinct** property allows a channel to be reused for the same members of a group chat. The **distinct** property automatically gets set to false when a new member is invited, or when a member leaves the channel. 
+- **1-on-1 messaging**: 1-on-1 messaging is a Twitter’s direct message style  private channel between two users. A distinct property enabled channel can be reused for the same members.
+- **Group messaging**: Group messaging is a WhatsApp-style closed group private channel among multiple users. Up to a few hundred members can be invited to a group channel. 
 
 #### Open channel vs. Group channel
 
