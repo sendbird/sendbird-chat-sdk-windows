@@ -161,22 +161,117 @@ From **Settings** > **Application** > **Security** > **Access token permission**
 
 ### Step 3: Create a new open channel
 
+Create an [open channel](). Once created, all users in your Sendbird application can easily participate in the channel. Similarly, you can create a [group channel]() by inviting users as new members to the channel.
+
+```cpp
+#include <SendBird.h>
+
+class SendBirdCreateOpenChannelHandler : public SBDCreateOpenChannelInterface {
+public:
+    SendBirdCreateOpenChannelHandler() {
+    }
+    
+    ~SendBirdCreateOpenChannelHandler() {
+    }
+    
+    void CompletionHandler(SBDOpenChannel *channel, SBDError *error) {
+        if (error != NULL) {
+            // Error Handlling.
+            // Deallocate error.
+            delete error;
+            return;
+        }
+        
+        // The open channel is created.
+        // Do not deallocate `channel` pointer.
+    }
+};
+
+void CreateOpenChannel() {
+    SendBirdCreateOpenChannelHandler *handler = new SendBirdCreateOpenChannelHandler(); // `handler` has to be deallocated later.
+    
+    // Every wstring type parameter is an option. If you don't have to set them, set `SBD_NULL_WSTRING`.
+    // OPERATOR_USER_IDS is vector<wstring> type. If you don't have to set it, set vector<wstring>().
+    SBDOpenChannel::CreateChannel(CHANNEL_NAME, CHANNEL_URL, COVER_URL, DATA, OPERATOR_USER_IDS, CUSTOM_TYPE, handler);
+}
+```
+
 ### Step 4: Enter the channel
 
+Enter the channel to send and receive messages.
+
+```cpp
+#include <SendBird.h>
+
+class SendBirdEnterOpenChannelHandler : public SBDEnterOpenChannelInterface {
+public:
+    SendBirdEnterOpenChannelHandler() {
+    
+    }
+    
+    ~SendBirdEnterOpenChannelHandler() {
+    
+    }
+    
+    void CompletionHandler(SBDError *error) {
+        if (error != NULL) {
+            // Error Handlling.
+            // Deallocate error.
+            delete error;
+            return;
+        }
+    }
+};
+
+void EnterOpenChannel() {
+    SendBirdEnterOpenChannelHandler *handler = new SendBirdEnterOpenChannelHandler();   // `handler` has to be deallocated later.
+    open_channel->Enter(handler);
+}
+```
 
 ### Step 5: Send a message to the channel
 
+Finally, send a message to the channel. There are two types: a user message, which is a plain text, and a file message, which is a binary file, such as an image or PDF, which can be also sent through the [dashboard](https://dashboard.sendbird.com/auth/signin) or [Chat Platform API](https://sendbird.com/docs/chat/v3/platform-api/guides/messages#2-send-a-message).
+
+```cpp
+#include <SendBird.h>
+
+class SendBirdSendUserMessageHandler : public SBDSendUserMessageInterface {
+public:
+    SendBirdSendUserMessageHandler() {
+    }
+    
+    ~SendBirdSendUserMessageHandler() {
+    }
+    
+    void CompletionHandler(SBDUserMessage *user_message, SBDError *error) {
+        if (error != NULL) {
+            // Error Handlling.
+            // Deallocate error.
+            delete error;
+            return;
+        }
+        
+        // Handle `user_message`.
+    }
+};
+
+void SendUserMessage() {
+    SendBirdSendUserMessageHandler *handler = new SendBirdSendUserMessageHandler(); // `handler` has to be deallocated later.
+    
+    // `SendUserMessage()` belongs to `SBDBaseChannel` class, so it can be used by `SBDOpenChannel` and `SBDGroupChannel` instance.
+    // TARGET_LANGUAGES is vector<wstring> type. If you don't have to set it, set vector<wstring>().
+    channel->SendUserMessage(MESSAGE_TEXT, DATA, CUSTOM_TYPE, TARGET_LANGUAGES, handler);
+}
+```
 
 <br />
 
-
-
 ## Authentication
 
-### Initializing with APP_ID
+### Initialize with APP_ID
 
-To use its chat features, you must initialize SendBird using the **APP_ID** assigned to your SendBird application.
-Typically, initialization would be implemented in the user login view controller.
+To use the chat features, you must initialize using the `APP_ID` assigned to your Sendbird application. It is recommended that code for initialization be implemented in the user login view controller.
 
 ```cpp
 #include <SendBird.h>
@@ -184,150 +279,147 @@ Typically, initialization would be implemented in the user login view controller
 SBDMain::Init(APP_ID);
 ```
 
-### Connecting with UserID
-By default, SendBird requires only a **USER_ID** to join a channel. Upon requesting connection, SendBird will query its user database for a matching USER_ID. If it finds that the UserID has not been registered yet, a new user account will be created. The USER_ID can be any unique string id, such as an email address or a UID from your database.
+### Connect with a user ID
+
+Connect a user to Sendbird server by using a unique user ID or with a user ID and an access token. To connect to Sendbird server, a user is required to log in with a unique ID. A new user can authenticate with any untaken user ID, which gets automatically registered to Sendbird system. An existing ID can log in directly. The ID must be unique within a Sendbird application to be distinguished from others, such as an email address or a UID from your database.
 
 This simple authentication procedure might be useful when you are in development or if your service does not require additional security.
 
-> Explanation on SendBird's usage of Delegates and callbacks can be found under the **[Event Handler](#event_handler)** section.
+Find out more about Sendbird's usage of Handlers and callbacks in the [Event handler](#event_handler) section.
 
 ```cpp
 #include <SendBird.h>
 
 class SendBirdConnectHandler : public SBDConnectInterface {
 public:
-  SendBirdConnectHandler() {
-  }
-
-  ~SendBirdConnectHandler() {
-  }
-
-  void CompletionHandler(SBDUser user, SBDError *error) {
-    if (error != NULL) {
-      // Error Handlling.
-
-      // Deallocate error.
-      delete error;
-
-      return;
+    SendBirdConnectHandler() {
     }
     
-    // Connected to SendBird.
-  }
+    ~SendBirdConnectHandler() {
+    }
+    
+    void CompletionHandler(SBDUser user, SBDError *error) {
+        if (error != NULL) {
+            // Error Handlling.
+            // Deallocate error.
+            delete error;
+            return;
+        }
+        
+        // Connected to Sendbird.
+    }
 };
 
 void Connect() {
-  SendBirdConnectHandler *handler = new SendBirdConnectHandler(); // `handler` has to be deallocated later.
-  SBDMain::Connect(USER_ID, SBD_NULL_WSTRING, handler);
+    SendBirdConnectHandler *handler = new SendBirdConnectHandler(); // `handler` has to be deallocated later.
+    SBDMain::Connect(USER_ID, SBD_NULL_WSTRING, handler);
 }
 ```
 
-### Connecting with UserID and Access Token
-With the SendBird [Platform API](/platform), you can create a user with an access token, or you can issue an access token for an existing user. Once an access token is issued, you are required to provide the user's token in the login method.
+### Connect with a user ID and access token
 
-1. Create a SendBird user account via the Platform API when your user signs up on your service.
-2. Save the access token to your secured persistent store.
-3. Load the access token in your client and pass it to the SendBird login method.
-4. For security reasons, we recommend that you periodically update your access token by issuing a new token to replace the previous one.
+With Sendbird [Chat Platform API](https://sendbird.com/docs/chat/v3/platform-api/getting-started/prepare-to-use-api), you can create a new user with an access token, or you can issue an access token for an existing user. Once an access token is issued, you are required to provide the user's token in the log in method.
 
+1. Using Chat Platform API, create a Sendbird user account with the information submitted when a user signs up or signs in to your service.
+2. Save the user ID along with the issued access token to your securely managed persistent storage. 
+3. When a user attempts to log in to the application, load the user ID and access token from the storage, and then pass them to Sendbird login method. 
+4. Periodically replacing the user's access token is recommended for account security.
 
-> You can set restrictions for users without access tokens in your Dashboard settings.
-These settings can be found under **Security - Access Token Policy**.
+#### - Tips for user account security
+
+From **Settings** > **Application** > **Security** > **Access token permission** setting in your dashboard, you can prevent users without an access token from logging in to your Sendbird application or restrict their access to **read** and **write** messages.
 
 ```cpp
 #include <SendBird.h>
 
 class SendBirdConnectHandler : public SBDConnectInterface {
 public:
-  SendBirdConnectHandler() {
-  }
-
-  ~SendBirdConnectHandler() {
-  }
-
-  void CompletionHandler(SBDUser user, SBDError *error) {
-    if (error != NULL) {
-      // Error Handlling.
-
-      // Deallocate error.
-      delete error;
-
-      return;
+    SendBirdConnectHandler() {
+    
     }
     
-    // Connected to SendBird.
-  }
+    ~SendBirdConnectHandler() {
+    
+    }
+    
+    void CompletionHandler(SBDUser user, SBDError *error) {
+        if (error != NULL) {
+            // Error Handlling.
+            // Deallocate error.
+            delete error;
+            return;
+        }
+        
+        // Connected to Sendbird.
+    }
 };
 
 void Connect() {
-  SendBirdConnectHandler *handler = new SendBirdConnectHandler(); // `handler` has to be deallocated later.
-  SBDMain::Connect(USER_ID, ACCESS_TOKEN, handler);
+    SendBirdConnectHandler *handler = new SendBirdConnectHandler(); // `handler` has to be deallocated later.
+    SBDMain::Connect(USER_ID, ACCESS_TOKEN, handler);
 }
 ```
 
-### Disconnecting
+### Disconnect from Sendbird server
 
-You should disconnect from SendBird when your user no longer needs to receive messages from an online state.
+You should disconnect from Sendbird when your user no longer needs to receive messages from an online state.
 
-Disconnecting removes all registered handlers and callbacks. That is, it removes all [Event Handlers](#event-handler) added through `AddReconnectionHandler()` or `AddChannelHandler()` of `SBDMain`. It also flushes all internally cached data, such as the channels that are cached when `GetChannel()` of `SBDOpenChannel` or `GetChannel()` of `SBDGroupChannel` is called.
+Disconnecting removes all registered handlers and callbacks. That is, it removes all [event handlers](#event-handler) added through `AddReconnectionHandler()` or `AddChannelHandler()` of `SBDMain`. It also flushes all internally cached data, such as the channels that are cached when `GetChannel()` of `SBDOpenChannel` or `GetChannel()` of `SBDGroupChannel` is called.
 
 ```cpp
 #include <SendBird.h>
 
 class SendBirdDisconnectHandler : public SBDDisconnectInterface {
 public:
-  SendBirdDisconnectHandler() {
-
-  }
-
-  ~SendBirdDisconnectHandler() {
-
-  }
-
-  void CompletionHandler() {
+    SendBirdDisconnectHandler() {
     
-  }
+    }
+    
+    ~SendBirdDisconnectHandler() {
+    
+    }
+    
+    void CompletionHandler() {
+    
+    }
 };
 
 void Disconnect() {
-  SendBirdDisconnectHandler *handler = new SendBirdDisconnectHandler(); // `handler` has to be deallocated later.
-  SBDMain::Disconnect(handler);
+    SendBirdDisconnectHandler *handler = new SendBirdDisconnectHandler();   // `handler` has to be deallocated later.
+    SBDMain::Disconnect(handler);
 }
 ```
 
-### Updating a User Profile and Profile Image
+### Update user profile
 
-You can update a user's nickname and profile image.
-
-Call `UpdateCurrentUserInfo()` to update a user's nickname, as well as their profile picture with a URL.
+By calling the `UpdateCurrentUserInfo()`, you can update a user's nickname, and the user’s profile picture with a URL.
 
 ```cpp
 #include <SendBird.h>
 
 class SendBirdUpdateUserInfoHandler : public SBDUpdateUserInfoInterface {
 public:
-  SendBirdUpdateUserInfoHandler() {
-
-  }
-
-  ~SendBirdUpdateUserInfoHandler() {
-
-  }
-
-  void CompletionHandler(SBDError *error) {
-      // Error Handlling.
-
-      // Deallocate error.
-      delete error;
-
-      return;
+    SendBirdUpdateUserInfoHandler() {
+    
     }
-  }
+    
+    ~SendBirdUpdateUserInfoHandler() {
+    
+    }
+    
+    void CompletionHandler(SBDError *error) {
+        if (error != NULL) {
+            // Error Handlling.
+            // Deallocate error.
+            delete error;
+            return;
+        }
+    }
 };
 
 void UpdateCurrentUserInfo() {
-  SendBirdUpdateUserInfoHandler *handler = new SendBirdUpdateUserInfoHandler(); // `handler` has to be deallocated later.
-  SBDMain::UpdateCurrentUserInfo(NEW_NICKNAME, NEW_PROFILE_IMAGE_URL, handler);
+    SendBirdUpdateUserInfoHandler *handler = new SendBirdUpdateUserInfoHandler(); // `handler` has to be deallocated later.
+    SBDMain::UpdateCurrentUserInfo(NEW_NICKNAME, NEW_PROFILE_IMAGE_URL, handler);
 }
 ```
 
@@ -338,110 +430,112 @@ Or, you can pass in an image file directly.
 
 class SendBirdUpdateUserInfoHandler : public SBDUpdateUserInfoInterface {
 public:
-  SendBirdUpdateUserInfoHandler() {
-
-  }
-
-  ~SendBirdUpdateUserInfoHandler() {
-
-  }
-
-  void CompletionHandler(SBDError *error) {
-      // Error Handlling.
-
-      // Deallocate error.
-      delete error;
-
-      return;
+    SendBirdUpdateUserInfoHandler() {
+    
     }
-  }
+    
+    ~SendBirdUpdateUserInfoHandler() {
+    
+    }
+    
+    void CompletionHandler(SBDError *error) {
+        if (error != NULL) {
+            // Error Handlling.
+            // Deallocate error.
+            delete error;
+            return;
+        }
+    }
 };
 
 void UpdateCurrentUserInfo() {
-  SendBirdUpdateUserInfoHandler *handler = new SendBirdUpdateUserInfoHandler(); // `handler` has to be deallocated later.
-  SBDMain::UpdateCurrentUserInfoWithBinaryProfileImage(NEW_NICKNAME, NEW_PROFILE_IMAGE_FILE_PATH, FILE_MIME_TYPE, handler);
+    SendBirdUpdateUserInfoHandler *handler = new SendBirdUpdateUserInfoHandler(); // `handler` has to be deallocated later.
+    SBDMain::UpdateCurrentUserInfoWithBinaryProfileImage(NEW_NICKNAME, NEW_PROFILE_IMAGE_FILE_PATH, FILE_MIME_TYPE, handler);
 }
 ```
 
-## Channel Types
+<br />
+
+## Channel types
+
 You should understand the following terminology before proceeding with the rest of this guide.
 
+### Open channel
 
-### Open Channel
-An **Open Channel** is a public chat. In this channel type, anyone can enter and participate in the chat without permission. A single channel can handle thousands of simultaneous users. i.e.) **a Twitch-style public chat**.
+An **open channel** is a Twitch-style public chat. In this channel type, anyone can enter and participate without permission. A single channel can handle thousands of simultaneous users.
 
 
-### Group Channel
-A **Group Channel** is a private chat. A user may join the chat only through an invitation by another user who is already a member of the chatroom.
+### Group channel
 
->* ** Distinct property ** : A channel with the **Distinct** property enabled will always be reused for the same members. If a new member is invited, or if a member leaves the channel, then the Distinct property is disabled automatically.
+A **group channel** is a private chat. A user may join the chat only through an invitation by another user who is already a member of the chat.
 
->* **1-on-1 messaging** : 1-on-1 messaging is a private channel between two users. You can enable the Distinct property for the channel in order to reuse a channel for the same members. i.e.) **Twitter Direct Messages-style 1-on-1 chatting**
+>* **Distinct property**: The **distinct** property allows a channel to be reused for the same members of a group chat. The **distinct** property automatically gets set to false when a new member is invited, or when a member leaves the channel. 
 
->* **Group messaging**  : Group messaging is a private channel among multiple users. You can invite up to hundreds of members into a group channel. i.e.) **a WhatsApp-style closed group chat**
+>* **1-on-1 messaging**: 1-on-1 messaging is a Twitter’s direct message style  private channel between two users. A distinct property enabled channel can be reused for the same members.
 
-#### Open vs. Group Channels
-|Type|Open Channel|Group Channel|
+>* **Group messaging**: Group messaging is a WhatsApp-style closed group private channel among multiple users. Up to a few hundred members can be invited to a group channel. 
+
+#### Open channel vs. Group channel
+
+|Type|Open channel|Group channel|
 | --- | --- | --- |
-| Access Control | Public | Invitation required |
-| Class Name | OpenChannel | GroupChannel |
-| Number of Members | Over a few thousand | Less than a few hundred |
-| How to Create | SendBird Dashboard / Platform API / Client SDK | Client SDK / Platform API|
+| Access control | Public | Invitation required |
+| Class name | OpenChannel | GroupChannel |
+| Number number in a channel | 1,000 participants | 100 members |
+| How to create | SendBird Dashboard / Platform API / Client SDK | Client SDK / Platform API|
 | Operators | Supported | N/A |
-| User Ban | Supported | N/A |
-| User Mute | Supported | N/A |
-| Freeze Channel | Supported | N/A |
-| Push Notifications| N/A | Supported |
-| Unread Counts | N/A | Supported |
-| Read Receipts | N/A | Supported |
-| Typing Indicators | N/A | Supported |
+| User ban | Supported | N/A |
+| User mute | Supported | N/A |
+| Freeze channel | Supported | N/A |
+| Push notifications| N/A | Supported |
+| Unread counts | N/A | Supported |
+| Read receipts | N/A | Supported |
+| Typing indicators | N/A | Supported |
 
+<br />
 
-## Open Channel
-An **Open Channel** is a public chat. In this channel type, anyone can enter and participate in the chat without permission. A single channel can handle thousands of simultaneous users. i.e.) **a Twitch-style public chat**
+## Open channel
 
+An **open channel** is a Twitch-style public chat. In this channel type, anyone can enter and participate in the chat without permission. A single channel can handle thousands of simultaneous users.
 
-### Creating an Open Channel
-You can create an Open Channel from the **[SendBird Dashboard](https://dashboard.sendbird.com)**.
+### Create an open channel
 
-To create a channel, you must specify a **Channel URL**, which is a unique identifier. Additionally, you can set a **Channel Topic**, the name of the channel.
+You can create an open channel from the [Sendbird Dashboard](https://dashboard.sendbird.com/auth/signin), or by using the Chat SDK, or using Sendbird [Chat Platform API](https://sendbird.com/docs/chat/v3/platform-api/guides/open-channel#2-create-a-channel). To create a channel on demand or dynamically, the last two methods are recommended. 
 
-An open channel is ideal for use cases that require a small and static number of channels - for example, when you have a central "Lobby Chat" within a game.
+A channel URL, a unique identifier, must be specified in order to create a channel. Additionally, you can specify your own channel topic on the name of the channel.
 
-You can also create a channel via the SDK or the SendBird [Platform API](/platform). You should do so when your channel needs to be created on demand or dynamically.
+An open channel is ideal for use cases that require a small and static number of channels such as chatting in a lobby in a game. 
 
 ```cpp
 #include <SendBird.h>
 
 class SendBirdCreateOpenChannelHandler : public SBDCreateOpenChannelInterface {
 public:
-  SendBirdCreateOpenChannelHandler() {
-  }
-
-  ~SendBirdCreateOpenChannelHandler() {
-  }
-
-  void CompletionHandler(SBDOpenChannel *channel, SBDError *error) {
-    if (error != NULL) {
-      // Error Handlling.
-
-      // Deallocate error.
-      delete error;
-
-      return;
+    SendBirdCreateOpenChannelHandler() {
     }
     
-    // The open channel is created.
-    // Do not deallocate `channel` pointer.
-  }
+    ~SendBirdCreateOpenChannelHandler() {
+    }
+    
+    void CompletionHandler(SBDOpenChannel *channel, SBDError *error) {
+        if (error != NULL) {
+            // Error Handlling.
+            // Deallocate error.
+            delete error;
+            return;
+        }
+        
+        // The open channel is created.
+        // Do not deallocate `channel` pointer.
+    }
 };
 
 void CreateOpenChannel() {
-  SendBirdCreateOpenChannelHandler *handler = new SendBirdCreateOpenChannelHandler(); // `handler` has to be deallocated later.
-
-  // Every wstring type parameter is an option. If you don't have to set them, set `SBD_NULL_WSTRING`.
-  // OPERATOR_USER_IDS is vector<wstring> type. If you don't have to set it, set vector<wstring>().
-  SBDOpenChannel::CreateChannel(CHANNEL_NAME, CHANNEL_URL, COVER_URL, DATA, OPERATOR_USER_IDS, CUSTOM_TYPE, handler);
+    SendBirdCreateOpenChannelHandler *handler = new SendBirdCreateOpenChannelHandler(); // `handler` has to be deallocated later.
+    
+    // Every wstring type parameter is an option. If you don't have to set them, set `SBD_NULL_WSTRING`.
+    // OPERATOR_USER_IDS is vector<wstring> type. If you don't have to set it, set vector<wstring>().
+    SBDOpenChannel::CreateChannel(CHANNEL_NAME, CHANNEL_URL, COVER_URL, DATA, OPERATOR_USER_IDS, CUSTOM_TYPE, handler);
 }
 ```
 
