@@ -13,7 +13,13 @@
   1. [Send your first message](#send-your-first-message)
   1. [Authentication](#authentication)
   1. [Channel types](#channel-types)
-  
+  1. [Open channel](#open-channel-1)
+  1. [Open channel: Advanced](#open-channel-advanced)
+  1. [Group channel](#group-channel-1)
+  1. [Group channel: Advanced](#group-channel-advanced)
+  1. [Channel metadata & metacounter](#channel-metadata--metacounter)
+  1. [Event handler](#event-handler)  
+ 
 <br />
 
 ## Introduction
@@ -91,7 +97,6 @@ void SendFileMessage() {
 The fastest way to test the Chat SDK is to build your chat app on top of our sample app. To create a project for the sample app, download the app from our GitHub repository. The link is down below. 
 
 -  https://github.com/sendbird/SendBird-Windows
-
 
 ### Step 1: Create a Sendbird application from your dashboard
 
@@ -2186,8 +2191,7 @@ If your application needs to keep track of users' connection statuses in real ti
 
 <br />
 
-## Group channel - Advanced
-
+## Group channel: Advanced
 
 ### Typing indicators
 You can send typing events by invoking `StartTyping()` and `EndTyping()`.
@@ -2354,7 +2358,7 @@ void SendUserMessage() {
 
 To get a message's custom type, read `message->custom_type`.
 
-### File Message thumbnails
+### File message thumbnails
 
 > This is one of Sendbird's **premium features**. Contact our [sales team](https://get.sendbird.com/talk-to-sales.html) for further assistance.
 
@@ -2498,6 +2502,7 @@ public:
 | tlh           | Klingon             |     -         |          -         |
 
 
+<br />
 
 ## Channel metadata & metacounter
 
