@@ -61,11 +61,9 @@ public:
 
   void CompletionHandler(SBDFileMessage *file_message, SBDError *error) {
     if (error != NULL) {
-      // Error Handlling.
-
+      // Error handlling.
       // Deallocate error.
       delete error;
-
       return;
     }
 
@@ -976,10 +974,10 @@ void GetPreviousMessage() {
 - `timestamp` : The reference timestamp.
 - `limit` : The number of messages to load. Note that the actual number of results may be larger than the set value when there are multiple messages retrieved as the earliest message on the same timestamp.
 - `reverse` : Whether to reverse the results.
-- `messageType` : A [`SBDMessageTypeFilter`] enum type. Should be one of `SBDMessageTypeFilterUser`, `SBDMessageTypeFilterFile`, `SBDMessageTypeFilterAdmin`, or `SBDMessageTypeFilterAll`.
+- `messageType` : A `SBDMessageTypeFilter` enum type. Should be one of `SBDMessageTypeFilterUser`, `SBDMessageTypeFilterFile`, `SBDMessageTypeFilterAdmin`, or `SBDMessageTypeFilterAll`.
 - `customType` : The Custom Type of the messages to be returned.
 
-To load messages sent after a specified timestamp, call the [`GetNextMessagesByTimestamp()`] in a similar fashion. To load results on either side of the reference timestamp, use the [`GetMessagesByTimestamp()`].
+To load messages sent after a specified timestamp, call the `GetNextMessagesByTimestamp()` in a similar fashion. To load results on either side of the reference timestamp, use the `GetMessagesByTimestamp()`.
 
 ### Delete a message
 
@@ -1085,9 +1083,9 @@ If your application needs to keep track of users' connection status in real time
 
 `connection_status` can return one of the three following values:
 
-* `SBDUserConnectionStatusNotAvailable`: A user's status information cannot be reached.
-* `SBDUserConnectionStatusOffline`: A user is disconnected from Sendbird server.
-* `SBDUserConnectionStatusOnline`: A user is connected to Sendbird server.
+- `SBDUserConnectionStatusNotAvailable`: A user's status information cannot be reached.
+- `SBDUserConnectionStatusOffline`: A user is disconnected from Sendbird server.
+- `SBDUserConnectionStatusOnline`: A user is connected to Sendbird server.
 
 ### Get a list of banned or muted users in a channel
 
