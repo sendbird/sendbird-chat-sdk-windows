@@ -1167,7 +1167,7 @@ To get a channel's custom type, read `channel->custom_type`.
 
 When creating a channel, a Custom Type can be additionally specified to further subclassify the channels. This custom type takes on the form of a `wstring`, and can be handy in searching for or filtering channels.
 
-`DATA` and `CUSTOM_TYPE` are both `String` fields that allow you to append information to your channels. The intended use case is for `CUSTOM_TYPE` to contain information that can subclassify the channel (e.g., distinguishing "School" and "Work" channels). However, both these fields can be flexibly utilized.
+> `DATA` and `CUSTOM_TYPE` are both `String` fields that allow you to append information to your channels. The intended use case is for `CUSTOM_TYPE` to contain information that can subclassify the channel (e.g., distinguishing "School" and "Work" channels). However, both these fields can be flexibly utilized.
 
 To embed a custom type into a message, simply pass a `String` argument to the **message** parameter in the `SendUserMessage()` or `SendFileMessage()`.
 
