@@ -1,38 +1,177 @@
-# [SendBird](https://sendbird.com) - Messaging and Chat API for Mobile Apps, Windows, and Websites
-[SendBird](https://sendbird.com) provides the chat API and SDK for your app enabling real-time communication among your users.
+# [Sendbird](https://sendbird.com) Chat SDK for Windows
 
 ![Platform](https://img.shields.io/badge/platform-Windows-blue.svg)
 ![Language](https://img.shields.io/badge/language-C%2B%2B-red.svg)
 [![Commercial License](https://img.shields.io/badge/license-Commercial-brightgreen.svg)](https://github.com/sendbird/SendBird-Windows/blob/master/LICENSE.md)
 ![Status](https://img.shields.io/badge/status-beta-yellowgreen.svg)
 
-## Quick Start
+## Table of contents
 
-### 1. Create a new SendBird application in the Dashboard
+  1. [Introduction](#introduction)
+  1. [Before getting started](#before-getting-started)
+  1. [Getting started](#getting-started)
+  1. [Send your first message](#send-your-first-message)
+  1. [Appendix](#appendix)
+  1. [Changelogs](#changelogs)
+  
+<br />
 
-The first thing you need to do is to log in to the **[SendBird Dashboard](https://dashboard.sendbird.com)** and create a SendBird application. If you do not yet have an account, you can log in with Google, GitHub, or create a new account.
+## Introduction
 
-You should create one application per service, regardless of the platform. For example, an app released in both Android, iOS, and Windows would require only one application to be created in the Dashboard.
+Through Chat SDK for Windows, you can efficiently integrate real-time chat into your client app. On the client-side implementation, you can initialize, configure and build the chat with minimal effort. On the server-side, Sendbird ensures reliable infra-management services for your chat within the app. This read.me provides the Chat SDK’s structure, supplementary features, and the installation steps. 
 
-All users within the same SendBird application are able to communicate with each other, across all platforms. This means users using iOS, Android, web clients, Windows, etc. can all chat with one another. However, users in different SendBird applications cannot talk to each other.
+### How it works
+
+It is simple to implement chat in your client app with the Chat SDK: a **user** logs in, sees a **list of channels**, selects or creates an **open channel** or a **group channel**, and, through the use of the **channel event handlers**, sends **messages** to the channel, while also receiving **them from other users** within the channel. 
+
+<br />
+
+## Before getting started
+
+This section shows you the prerequisites you need to know for using Sendbird Chat SDK for Windows.
+
+### Requirements
+
+- Windows 7 (32-bit/64-bit) or higher
+- C++03 or higher
+
+<br />
+
+## Getting started
+
+### Try the sample app
+
+The fastest way to test the Chat SDK is to build your chat app on top of our sample app. To create a project for the sample app, download the app from our GitHub repository. The link is down below. 
+
+-  https://github.com/sendbird/SendBird-Windows
 
 
-### 2. Build a new app or integrate SendBird with an existing app
+### Step 1: Create a Sendbird application from your dashboard
+
+The first thing you need to do is to log in to the [Sendbird Dashboard](https://dashboard.sendbird.com/auth/signin) and create a Sendbird application. If you do not yet have an account, you can log in with Google, GitHub, or create a new account.
+
+You should create one application per service, regardless of the platform. For example, an app released in Android, iOS, and Windows would require only one application to be created on the Sendbird Dashboard.
+
+All users within the same Sendbird application are able to communicate with each other, across all platforms. This means users using iOS, Android, web clients, Windows, etc. can all chat with one another. However, users in different Sendbird applications cannot talk to each other.
+
+
+### Step 2: Build a new app or integrate Sendbird with an existing app
 
 #### 2-1. Dependencies
 
-This library doesn't have any dependencies. However, if you use boost and OpenSSL and there is a symbol conflict with them, contact [Technical Support
+This library doesn't have any dependencies. However, if you use boost and `OpenSSL` and there is a symbol conflict with them, contact [Technical Support
 ](https://help.sendbird.com/hc/en-us/requests/new).
 
 #### 2-2. Set Visual Studio Project
 
-* Set `the directory of header files` for SendBird to *Project Properties* > *Configuration Properties* > *VC++ Directories* > *Include Directories*.
+- Set the directory of header files for Sendbird to **Project Properties** > **Configuration Properties** > **VC++ Directories** > **Include Directories**.
+- Set the directory of `Sendbird.lib` to **Project Properties** > **Configuration Properties** > **VC++ Directories** > **Library Directories**.
+- Set `Sendbird.lib` to **Project Properties** > **Configuration Properties** > **Linker** > **Input** > **Additional Dependencies**.
+- ***Every string parameter and variable is `wstring` type and its value is unicode***.
 
-* Set `the directory of SendBird.lib` to  *Project Properties* > *Configuration Properties* > *VC++ Directories* > *Library Directories*
+<br /> 
 
-* Set the `SendBird.lib` to *Project Properties* > *Configuration Properties* > *Linker* > *Input* > *Additional Dependencies*
+## Send your first message
 
-* ***Every string parameter and variable is `wstring` type and its value is unicode.***
+### Step 1: Initialize with APP_ID
+
+To use the chat features, you must initialize using the `APP_ID` assigned to your Sendbird application. It is recommended that code for initialization be implemented in the user login view controller.
+
+```cpp
+#include <Sendbird.h>
+
+SBDMain::Init(APP_ID);
+```
+
+### Step 2: Connect to Sendbird server
+
+#### A. Connect with a user ID
+
+Connect a user to Sendbird server by using a unique user ID or with a user ID and an access token. To connect to Sendbird server, a user is required to log in with a unique ID. A new user can authenticate with any untaken user ID, which gets automatically registered to Sendbird system. An existing ID can log in directly. The ID must be unique within a Sendbird application to be distinguished from others, such as an email address or a UID from your database.
+
+This simple authentication procedure might be useful when you are in development or if your service does not require additional security.
+
+```cpp
+#include <SendBird.h>
+
+class SendBirdConnectHandler : public SBDConnectInterface {
+public:
+    SendBirdConnectHandler() {
+    }
+    
+    ~SendBirdConnectHandler() {
+    }
+    
+    void CompletionHandler(SBDUser user, SBDError *error) {
+        if (error != NULL) {
+            // Error Handlling.
+            
+            // Deallocate error.
+            delete error;
+            
+            return;
+        }
+        
+        // Connected to Sendbird server.
+    }
+};
+
+void Connect() {
+    SendBirdConnectHandler *handler = new SendBirdConnectHandler(); // `handler` has to be deallocated later.
+    SBDMain::Connect(USER_ID, SBD_NULL_WSTRING, handler);
+}
+```
+
+#### B. Connect with a user ID and access token
+
+With Sendbird [Chat Platform API](https://sendbird.com/docs/chat/v3/platform-api/guides/user#2-create-a-user), you can create a new user with an access token, or you can issue an access token for an existing user. Once an access token is issued, you are required to provide the user's token in the log in method.
+
+```cpp
+#include <SendBird.h>
+
+class SendBirdConnectHandler : public SBDConnectInterface {
+public:
+    SendBirdConnectHandler() {
+    }
+    
+    ~SendBirdConnectHandler() {
+    }
+    
+    void CompletionHandler(SBDUser user, SBDError *error) {
+        if (error != NULL) {
+            // Error Handlling.
+            
+            // Deallocate error.
+            delete error;
+            
+            return;
+        }
+        
+        // Connected to SendBird.
+    }
+};
+
+void Connect() {
+    SendBirdConnectHandler *handler = new SendBirdConnectHandler(); // `handler` has to be deallocated later.
+    SBDMain::Connect(USER_ID, ACCESS_TOKEN, handler);
+}
+```
+
+**- Tips for user account security**
+
+From **Settings** > **Application** > **Security** > **Access token permission** setting in your dashboard, you can prevent users without an access token from logging in to your Sendbird application or restrict their access to **read** and **write** messages.
+
+### Step 3: Create a new open channel
+
+### Step 4: Enter the channel
+
+
+### Step 5: Send a message to the channel
+
+
+<br />
+
+
 
 ## Authentication
 
