@@ -1498,6 +1498,84 @@ void CreateGroupChannel() {
 You can also create a group channel via SendBird [Chat Platform API](https://sendbird.com/docs/chat/v3/platform-api/guides/group-channel#2-create-a-channel).
 You should utilize the Platform API when you wish to control channel creations and member invitations on the server-side.
 
+### 1-on-1 chat
+
+A 1-on-1 chat is just a group channel with two members.
+
+A user can create a group channel through the client SDK on demand. Pass in two user IDs to create a 1-on-1 chat between two users.
+It is recommended that the **distinct** property be set to be **true** for 1-on-1 chat. If the **distinct** property is set to be **false**, the user will be able to create a new channel with the same user, even if there is a pre-existing channel with the same user. In this case, multiple 1-on-1 chats between the same two users would exist, each channel with its own chat history and data. 
+
+```cpp
+#include <SendBird.h>
+
+class SendBirdCreateGroupChannelHandler : public SBDCreateGroupChannelInterface {
+public:
+    SendBirdCreateGroupChannelHandler() {
+    }
+    
+    ~SendBirdCreateGroupChannelHandler() {
+    }
+    
+    void CompletionHandler(SBDGroupChannel *channel, SBDError *error) {
+        if (error != NULL) {
+            // Error Handlling.
+            // Deallocate error.
+            delete error;
+            return;
+        }
+        
+        // The group channel is created.
+        // Do not deallocate `channel` pointer.
+    }
+};
+
+void CreateGroupChannel() {
+    SendBirdCreateGroupChannelHandler *handler = new SendBirdCreateGroupChannelHandler(); // `handler` has to be deallocated later.
+    SBDGroupChannel::CreateChannel(vector<wstring>(), SBD_NULL_WSTRING, IS_DISTINCT, SBD_NULL_WSTRING, SBD_NULL_WSTRING, SBD_NULL_WSTRING, handler);
+}
+```
+
+You can also append additional information by passing several arguments to the corresponding parameters. 
+
+```cpp
+#include <SendBird.h>
+
+class SendBirdCreateGroupChannelHandler : public SBDCreateGroupChannelInterface {
+public:
+    SendBirdCreateGroupChannelHandler() {
+    }
+    
+    ~SendBirdCreateGroupChannelHandler() {
+    }
+    
+    void CompletionHandler(SBDGroupChannel *channel, SBDError *error) {
+        if (error != NULL) {
+            // Error Handlling.
+            // Deallocate error.
+            delete error;
+            return;
+        }
+        
+        // The group channel is created.
+        // Do not deallocate `channel` pointer.
+    }
+};
+
+void CreateGroupChannel() {
+    SendBirdCreateGroupChannelHandler *handler = new SendBirdCreateGroupChannelHandler(); // `handler` has to be deallocated later.
+    SBDGroupChannel::CreateChannel(vector<wstring>(), NAME, IS_DISTINCT, COVER_IMAGE_URL, DATA, CUSTOM_TYPE, handler);
+}
+```
+
+- `NAME`: the name of the channel, or the channel topic.
+- `COVER_IMAGE_URL`: the URL of the cover image, which you can fetch to render into the UI.
+- `DATA`: a `wstring` field to store structured information, such as a `JSON` String.
+- `CUSTOM_TYPE`: a `wstring` field that allows you to subclassify your channel.
+
+> See the [Advanced](##group-channel---advanced) section for more information on cover images and custom types.
+
+You can also create channels via SendBird [Chat Platform API](https://sendbird.com/docs/chat/v3/platform-api/guides/group-channel#2-create-a-channel). You should utilize Chat Platform API when you wish to control channel creation and member invitations on the server-side.
+
 ### Channel cover images
 
 When creating a channel, you can add a cover image by specifying an image URL.
@@ -1859,7 +1937,7 @@ Add `SBDChannelInterface` to receive messages. A received `SBDBaseMessage` objec
 
 - **SBDUserMessage**: A text message sent by a user
 - **SBDFileMessage**: A binary file message sent by a user 
-- [SBDAdminMessage](#open-channel-3-admin-messages): A text message sent by an admin through the [Chat Platform API](https://sendbird.com/docs/chat/v3/platform-api/guides/messages#2-send-a-message)
+- [**SBDAdminMessage**](#open-channel-3-admin-messages): A text message sent by an admin through the [Chat Platform API](https://sendbird.com/docs/chat/v3/platform-api/guides/messages#2-send-a-message)
 
 `UNIQUE_HANDLER_ID` is a unique identifier to register multiple concurrent handlers.
 
@@ -1892,9 +1970,9 @@ void RemoveChannelHandler() {
 }
 ```
 
-### Loading previous messages
-You can load previous messages by creating a `SBDPreviousMessageListQuery` instance.
-You will be able to display past messages in your UI once they have loaded.
+### Load previous messages
+
+Create a `SBDPreviousMessageListQuery` instance to load previous messages. Past messages in your UI will be displayed once they are loaded. 
 
 ```cpp
 #include <SendBird.h>
@@ -1903,42 +1981,43 @@ SBDPreviousMessageListQuery *query;
 
 class SendBirdLoadPreviousMessageListHandler : public SBDLoadPreviousMessageListInterface {
 public:
-  SendBirdLoadPreviousMessageListHandler() {
-
-  }
-
-  ~SendBirdLoadPreviousMessageListHandler() {
-
-  }
-
-  void CompletionHandler(vector<SBDBaseMessage *> messages, SBDError *error) {
-    // Error Handlling.
-
-    // Deallocate error.
-    delete error;
-
-    return;
-  }
+    SendBirdLoadPreviousMessageListHandler() {
+    
+    }
+    
+    ~SendBirdLoadPreviousMessageListHandler() {
+    
+    }
+    
+    void CompletionHandler(vector<SBDBaseMessage *> messages, SBDError *error) {
+        // Error Handlling.
+        // Deallocate error.
+        delete error;
+        return;
+    }
 };
 
 void InitQuery() {
-  query = channel->CreatePreviousMessageQuery();
+    query = channel->CreatePreviousMessageQuery();
 }
 
 void GetPreviousMessages() {
-  SendBirdLoadPreviousMessageListHandler *handler = new SendBirdLoadPreviousMessageListHandler(); // `handler` has to be deallocated later.
-  query->LoadNextPage(30, false, handler);
+    SendBirdLoadPreviousMessageListHandler *handler = new SendBirdLoadPreviousMessageListHandler(); // `handler` has to be deallocated later.
+    query->LoadNextPage(30, false, handler);
 }
 ```
 
-Past messages are queried in fixed numbers (30 in the above code). A new `SBDPreviousMessageListQuery` instance will load the most recent `n` messages. Calling `LoadNextPage()` on the same query instance will load `n` messages before that. Therefore, you should store your query instance as a member variable in order to traverse through your entire message history.
+Past messages are queried in fixed numbers as shown in the code above which queried **30**. A new `SBDPreviousMessageListQuery` instance will load the most recent `n` messages. Calling the `LoadNextPage()` on the same query instance will load n messages before that. Therefore, you should store your query instance as a member variable in order to traverse through your entire message history.
 
-> An important note is that you must receive your first `CompletionHandler()` callback before invoking `LoadNextPage()` again.
+> An important note is that you must receive your first `CompletionHandler()` callback before invoking the `LoadNextPage()` again.
 
-### Loading messages by timestamp
+### Load messages by timestamp
+
 You can retrieve a set number of messages starting from a specific timestamp.
 
 To load messages sent prior to a specifed timestamp, use [`GetPreviousMessagesByTimestamp()`] of the channel instance.
+
+A set number of messages starting from a specific timestamp can be retrieved. To load messages sent prior to a specified timestamp, use the `GetPreviousMessagesByTimestamp()` of the channel instance.
 
 ```cpp
 #include <SendBird.h>
@@ -1947,183 +2026,95 @@ int64_t timestamp = INT64_MAX;
 
 class SendBirdGetPreviousMessagesHandler : public SBDGetMessagesInterface {
 public:
-  SendBirdGetPreviousMessagesHandler() {
-
-  }
-
-  ~SendBirdGetPreviousMessagesHandler() {
-
-  }
-  
-  void CompletionHandler(vector<SBDBaseMessage *> messages, SBDError *error) {
-    if (error != NULL) {
-      // Error Handlling.
-
-      // Deallocate error.
-      delete error;
-
-      return;
+    SendBirdGetPreviousMessagesHandler() {
+    
     }
-  }
+    
+    ~SendBirdGetPreviousMessagesHandler() {
+    
+    }
+    
+    void CompletionHandler(vector<SBDBaseMessage *> messages, SBDError *error) {
+        if (error != NULL) {
+            // Error Handlling.
+            // Deallocate error.
+            delete error;
+            return;
+        }
+    }
 };
 
 void GetPreviousMessage() {
-  SendBirdGetPreviousMessagesHandler *handler = new SendBirdGetPreviousMessagesHandler(); // `handler` has to be deallocated later.
-  channel->GetPreviousMessagesByTimestamp(timestamp, limit, reverse, messageType, customType, handler);
+    SendBirdGetPreviousMessagesHandler *handler = new SendBirdGetPreviousMessagesHandler(); // `handler` has to be deallocated later.
+    channel->GetPreviousMessagesByTimestamp(timestamp, limit, reverse, messageType, customType, handler);
 }
 ```
 
-> * `timestamp` : The reference timestamp.
-* `limit` : The number of messages to load. Note that the actual number of results may be larger than the set value when there are multiple messages with the same timestamp as the earliest message.
-* `reverse` : Whether to reverse the results.
-* `messageType` : A [`SBDMessageTypeFilter`] enum type. Should be one of `SBDMessageTypeFilterUser`, `SBDMessageTypeFilterFile`, `SBDMessageTypeFilterAdmin`, or `SBDMessageTypeFilterAll`.
-* `customType` : The Custom Type of the messages to be returned.
+- `timestamp` : The reference timestamp.
+- `limit` : The number of messages to load. Note that the actual number of results may be larger than the set value when there are multiple messages with the same timestamp as the earliest message.
+- `reverse` : Whether to reverse the results.
+- `messageType` : A `SBDMessageTypeFilter` enum type. Should be one of `SBDMessageTypeFilterUser`, `SBDMessageTypeFilterFile`, `SBDMessageTypeFilterAdmin`, or `SBDMessageTypeFilterAll`.
+- `customType` : The custom type of the messages to be returned.
 
-To load messages sent after a specified timestamp, call [`GetNextMessagesByTimestamp()`] in a similar fashion. To load results on either side of the reference timestamp, use [`GetMessagesByTimestamp()`].
+To load messages sent after a specified timestamp, call the `GetNextMessagesByTimestamp()` in a similar fashion. To load results on either side of the reference timestamp, use the `GetMessagesByTimestamp()`.
 
+### Delete a message
 
-### Deleting messages
-Users are able to delete messages. An error is returned if a user tries to delete messages sent by someone else.
-Channel Operators are able to delete any message in the channel, including those by other users.
+Users are able to delete messages. An error is returned if a user tries to delete messages sent by someone else. Channel operators are able to delete any messages sent by any users in the channel.
 
-Deleting a message fires a `MessageDeleted` event to all other users in the channel.
+Deleting a message triggers a `MessageDeleted` event to all other online users in the channel.
 
 ```cpp
 #include <SendBird.h>
 
 class SendBirdDeleteMessageHandler : public SBDDeleteMessageInterface {
 public:
-  SendBirdDeleteMessageHandler() {
-
-  }
-
-  ~SendBirdDeleteMessageHandler() {
-
-  }
-
-  void CompletionHandler(SBDError *error) {
-    if (error != NULL) {
-      // Error Handlling.
-
-      // Deallocate error.
-      delete error;
-
-      return;
+    SendBirdDeleteMessageHandler() {
+    
     }
-  }
+    
+    ~SendBirdDeleteMessageHandler() {
+    
+    }
+    
+    void CompletionHandler(SBDError *error) {
+        if (error != NULL) {
+            // Error Handlling.
+            // Deallocate error.
+            delete error;
+            return;
+        }
+    }
 };
 
 void DeleteMessage() {
-  SendBirdDeleteMessageHandler *handler = new SendBirdDeleteMessageHandler(); // `handler` has to be deallocated later.
-  channel->DeleteMessage(USER_MESSAGE, handler);
+    SendBirdDeleteMessageHandler *handler = new SendBirdDeleteMessageHandler(); // `handler` has to be deallocated later.
+    channel->DeleteMessage(USER_MESSAGE, handler);
 }
 ```
 
-You can receive a `MessageDeleted()` event using a Channel Interface.
+A `SBDChannelInterface` can be used to receive a `MessageDeleted()` event.
 
 ```cpp
 class SendBirdChannelEventHandler : public SBDChannelInterface {
 public:
-  // ...
-
-  void MessageDeleted(SBDBaseChannel *channel, uint64_t message_id) {
-
-  }
-
-  // ...
+    // ...
+    
+    void MessageDeleted(SBDBaseChannel *channel, uint64_t message_id) {
+    
+    }
+    
+    // ...
 };
 
 void InitSendBird() {
-  SBDMain::AddChannelHandler(new SendBirdChannelEventHandler(), UNIQUE_CHANNEL_HANDLER_IDENTIFIER);
+    SBDMain::AddChannelHandler(new SendBirdChannelEventHandler(), UNIQUE_CHANNEL_HANDLER_IDENTIFIER);
 }
 ```
 
-## 1-to-1 Chat
+<br />
 
-A 1-to-1 chat is just a Group Channel with two members.
-
-### Creating a 1-to-1 chat
-
-A Group Channel can be created on demand by a user through the client SDK. Pass in two user IDs to create a 1-to-1 chat between two users.
-
-You would typically want a 1-to-1 chat to be **Distinct**. If the Distinct property is not enabled, the user will be able to create a new channel with the same opponent, even if they have had previous conversations. In this case, multiple 1-to-1 chats between the same two users might exist, each with its own chat history and data.
-
-```cpp
-#include <SendBird.h>
-
-class SendBirdCreateGroupChannelHandler : public SBDCreateGroupChannelInterface {
-public:
-  SendBirdCreateGroupChannelHandler() {
-  }
-
-  ~SendBirdCreateGroupChannelHandler() {
-  }
-
-  void CompletionHandler(SBDGroupChannel *channel, SBDError *error) {
-    if (error != NULL) {
-      // Error Handlling.
-
-      // Deallocate error.
-      delete error;
-
-      return;
-    }
-    
-    // The group channel is created.
-    // Do not deallocate `channel` pointer.
-  }
-};
-
-void CreateGroupChannel() {
-  SendBirdCreateGroupChannelHandler *handler = new SendBirdCreateGroupChannelHandler(); // `handler` has to be deallocated later.
-  SBDGroupChannel::CreateChannel(vector<wstring>(), SBD_NULL_WSTRING, IS_DISTINCT, SBD_NULL_WSTRING, SBD_NULL_WSTRING, SBD_NULL_WSTRING, handler);
-}
-```
-
-You can also append information by passing additional arguments
-
-```cpp
-#include <SendBird.h>
-
-class SendBirdCreateGroupChannelHandler : public SBDCreateGroupChannelInterface {
-public:
-  SendBirdCreateGroupChannelHandler() {
-  }
-
-  ~SendBirdCreateGroupChannelHandler() {
-  }
-
-  void CompletionHandler(SBDGroupChannel *channel, SBDError *error) {
-    if (error != NULL) {
-      // Error Handlling.
-
-      // Deallocate error.
-      delete error;
-
-      return;
-    }
-    
-    // The group channel is created.
-    // Do not deallocate `channel` pointer.
-  }
-};
-
-void CreateGroupChannel() {
-  SendBirdCreateGroupChannelHandler *handler = new SendBirdCreateGroupChannelHandler(); // `handler` has to be deallocated later.
-  SBDGroupChannel::CreateChannel(vector<wstring>(), NAME, IS_DISTINCT, COVER_IMAGE_URL, DATA, CUSTOM_TYPE, handler);
-}
-```
-
-* `NAME` : the name of the channel, or the Channel Topic.
-* `COVER_IMAGE_URL` : the URL of the cover image, which you can fetch to render into the UI.
-* `DATA` : a `wstring` field to store structured information, such as a JSON String.
-* `CUSTOM_TYPE` : a `wstring` field that allows you to subclassify your channel.
-
-> See the [Advanced](##group-channel---advanced) section for more information on cover images and Custom Types.
-
-You can also create channels via the SendBird [Platform API](/platform). You should utilize the Platform API when you wish to control channel creations and member invitations on the server-side.
-
-## Group Channel - Advanced
+## Group channel - Advanced
 
 ### Getting a list of all channel members
 
