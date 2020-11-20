@@ -481,7 +481,7 @@ A **group channel** is a private chat. A user may join the chat only through an 
 | --- | --- | --- |
 | Access control | Public | Invitation required |
 | Class name | OpenChannel | GroupChannel |
-| Number number in a channel | 1,000 participants | 100 members |
+| Number in a channel | 1,000 participants | 100 members |
 | How to create | SendBird Dashboard / Platform API / Client SDK | Client SDK / Platform API|
 | Operators | Supported | N/A |
 | User ban | Supported | N/A |
