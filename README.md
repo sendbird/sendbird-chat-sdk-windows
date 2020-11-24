@@ -10,7 +10,7 @@
   1. [Introduction](#introduction)
   1. [Before getting started](#before-getting-started)
   1. [Getting started](#getting-started)
-  1. [Send your first message](#send-your-first-message)
+  1. [Sending your first message](#sending-your-first-message)
   1. [Authentication](#authentication)
   1. [Channel types](#channel-types)
   1. [Open channel](#open-channel-1)
@@ -29,6 +29,10 @@ Through Chat SDK for Windows, you can efficiently integrate real-time chat into 
 ### How it works
 
 It is simple to implement chat in your client app with the Chat SDK: a **user** logs in, sees a **list of channels**, selects or creates an **open channel** or a **group channel**, and, through the use of the **channel event handlers**, sends **messages** to the channel, while also receiving **them from other users** within the channel. 
+
+### More about Sendbird Chat SDK for Windows
+
+If you have any comments or questions regarding bugs and feature requests, visit [Sendbird community](https://community.sendbird.com). 
 
 <br />
 
@@ -76,7 +80,7 @@ This library doesn't have any dependencies. However, if you use boost and `OpenS
 
 <br /> 
 
-## Send your first message
+## Sending your first message
 
 ### Step 1: Initialize with APP_ID
 
