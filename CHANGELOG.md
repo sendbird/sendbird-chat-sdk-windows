@@ -1,5 +1,9 @@
 # Change Log
 
+### v3.0.14(May 21, 2021)
+* Upgraded boost(1.72.0)
+* Exclude a few algorithms(IDEA, RC4, RC5, MD2, MDC2) from openssl.
+
 ### v3.0.13(Jun 1, 2020)
 * Fixed a bug that `MessageReceived()` event hander doesn't return the latest channel when the channel was just updated.
 
